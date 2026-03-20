@@ -2,26 +2,30 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// 1. IMPROVED TRANSPORTER CONFIG FOR PRODUCTION
+// 1. RESILIENT TRANSPORTER CONFIG FOR PRODUCTION (Using Port 587 for better compatibility)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
+    port: 587,
+    secure: false, // Port 587 uses STARTTLS (secure: false), not SSL (secure: true)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    // Adding a timeout to prevent the request from hanging forever
-    connectionTimeout: 10000, 
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    // Adding a timeout and retries to handle cloud latency
+    connectionTimeout: 15000, 
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
+    tls: {
+        // This ensures the connection doesn't fail due to self-signed certificate issues in some environments
+        rejectUnauthorized: false
+    }
 });
 
 // Verify connection configuration on startup
 transporter.verify(function (error, success) {
     if (error) {
-        console.error("❌ Nodemailer Setup Error:", error);
+        console.error("❌ Nodemailer Setup Error:", error.message);
     } else {
         console.log("✅ Email Server is ready to send OTPs");
     }
@@ -45,7 +49,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(`Attempting login for: ${email}`); // LOGGING
+        console.log(`Attempting login for: ${email}`); 
 
         const user = await User.findOne({ email });
 
@@ -81,15 +85,13 @@ exports.login = async (req, res) => {
             `
         };
 
-        // 2. DETAILED EMAIL LOGGING
-        console.log("Sending email...");
+        console.log("Sending email via Port 587...");
         await transporter.sendMail(mailOptions);
         console.log("✅ OTP Email sent successfully to:", email);
         
         res.status(200).json({ message: "OTP sent to your email." });
 
     } catch (error) {
-        // THIS WILL SHOW IN RENDER LOGS
         console.error("🚨 LOGIN/OTP FATAL ERROR:", {
             message: error.message,
             code: error.code,
