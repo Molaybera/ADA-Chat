@@ -581,3 +581,232 @@ body {
     from { opacity: 0; transform: translateY(-20px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Encryption indicator ─────────────────────────────────────────────────── */
+.enc-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--online);
+    opacity: 0;
+    animation: encFadeIn 0.5s ease 0.2s forwards;
+}
+.enc-indicator i {
+    font-size: 9px;
+    animation: lockPulse 1s ease 0.2s;
+}
+@keyframes encFadeIn {
+    from { opacity: 0; transform: translateX(6px); }
+    to   { opacity: 0.7; transform: translateX(0); }
+}
+@keyframes lockPulse {
+    0%   { transform: scale(1);   color: var(--primary); }
+    50%  { transform: scale(1.5); color: var(--online);  }
+    100% { transform: scale(1);   color: var(--online);  }
+}
+
+/* ── Screenshot warning toast ─────────────────────────────────────────────── */
+.screenshot-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    backdrop-filter: blur(12px);
+    color: #fca5a5;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 99999;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+}
+.screenshot-warning.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── Mobile responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    body { overflow: hidden; }
+
+    .app-container {
+        flex-direction: column;
+        position: relative;
+    }
+
+    /* Sidebar takes full screen on mobile */
+    .sidebar {
+        width: 100%;
+        height: 100vh;
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 20;
+        transition: transform 0.3s ease;
+    }
+
+    /* Hide sidebar when chat is open */
+    .sidebar.hidden-mobile {
+        transform: translateX(-100%);
+    }
+
+    /* Chat area takes full screen */
+    .chat-area {
+        width: 100%;
+        height: 100vh;
+        position: absolute;
+        top: 0; left: 0;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    /* Show chat area when contact selected */
+    .chat-area.visible-mobile {
+        transform: translateX(0);
+    }
+
+    /* Show back button on mobile */
+    .btn-back-mobile {
+        display: flex !important;
+    }
+
+    .chat-header { padding: 14px 16px; }
+    .chat-window { padding: 16px; gap: 12px; }
+    .input-area  { padding: 12px 16px; }
+
+    .bubble { max-width: 80%; font-size: 14px; }
+
+    #call-status-text { font-size: 20px; }
+    #caller-name      { font-size: 15px; }
+
+    #video-grid { width: 100%; border-radius: 12px; margin-bottom: 24px; }
+
+    .call-btn-circle { width: 58px; height: 58px; font-size: 20px; }
+
+    #local-video       { width: 100px; }
+    #local-avatar-overlay { width: 100px; height: 56px; }
+
+    .sidebar-header { padding: 16px; }
+    .contact-item   { padding: 12px 16px; }
+}
+
+/* Back button — hidden on desktop, shown on mobile via media query */
+.btn-back-mobile {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 18px;
+    margin-right: 4px;
+    transition: 0.2s;
+}
+.btn-back-mobile:hover { background: rgba(255,255,255,0.05); }
+/* ── AI Summary Modal ─────────────────────────────────────────────────────── */
+.summary-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 50000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+.summary-modal.hidden { display: none !important; }
+
+.summary-modal-box {
+    background: #111827;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.05);
+    overflow: hidden;
+    animation: slideUpModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUpModal {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.summary-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0, 212, 255, 0.03);
+}
+
+.summary-modal-body {
+    padding: 28px 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.summary-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0;
+    color: var(--text-dim);
+    font-size: 14px;
+}
+
+#summary-text {
+    color: var(--text-main);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+#summary-text .summary-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+#summary-text .summary-point:last-child { border-bottom: none; }
+#summary-text .summary-point i {
+    color: var(--primary);
+    margin-top: 3px;
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .summary-modal-box { border-radius: 16px; }
+    .summary-modal-body { max-height: 70vh; }
+}

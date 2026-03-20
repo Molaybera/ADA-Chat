@@ -58,6 +58,23 @@ const remoteAvName = document.getElementById('remote-av-name');
 
 const menuTrigger = document.querySelector('.fa-ellipsis-vertical')?.parentElement;
 
+// ── Mobile navigation ──────────────────────────────────────────────────────
+const sidebar   = document.querySelector('.sidebar');
+const chatArea  = document.querySelector('.chat-area');
+const btnBack   = document.getElementById('btn-back-mobile');
+
+function showChatMobile() {
+    sidebar?.classList.add('hidden-mobile');
+    chatArea?.classList.add('visible-mobile');
+}
+function showSidebarMobile() {
+    sidebar?.classList.remove('hidden-mobile');
+    chatArea?.classList.remove('visible-mobile');
+}
+if (btnBack) btnBack.onclick = showSidebarMobile;
+
+// ── Screenshot detection disabled ──────────────────────────────────────────
+
 function scrollToBottom() {
     if (chatWindow) chatWindow.scrollTop = chatWindow.scrollHeight;
 }
@@ -104,7 +121,9 @@ function renderUserList() {
 async function selectContact(user) {
     activeRecipientId = user.userId;
     unreadCounts[user.userId] = 0;
+    conversationLog = []; // ✅ reset log for new contact
     resetFileStaging();
+    showChatMobile(); // ✅ switch to chat view on mobile
 
     if (welcomeScreen) welcomeScreen.style.display = 'none';
     if (chatHeader) chatHeader.style.display = 'flex';
@@ -497,9 +516,16 @@ function renderMessage(msg, isSelf) {
     if (msg.type === 'text') contentHtml = `<p>${msg.content}</p>`;
     else if (msg.type === 'image') contentHtml = `<img src="${msg.content}" style="max-width:250px;border-radius:12px;">`;
     else if (msg.type === 'file') contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
-    row.innerHTML = `<div class="bubble">${contentHtml}<div class="bubble-meta">${time}</div></div>`;
+    const encBadge = isSelf ? `<span class="enc-indicator"><i class="fa-solid fa-lock"></i>encrypted</span>` : '';
+    row.innerHTML = `<div class="bubble">${contentHtml}<div class="bubble-meta">${encBadge}${time}</div></div>`;
     chatWindow.appendChild(row);
     scrollToBottom();
+    // ✅ Track message for AI summarizer
+    conversationLog.push({
+        type: msg.type,
+        content: msg.content,
+        senderName: isSelf ? userName : (activeChatUser?.innerText || 'Them')
+    });
 }
 
 document.getElementById('btn-voice-call').onclick = () => initCall('voice');
@@ -551,3 +577,70 @@ function confirmLogout() {
 }
 const headerLogoutBtn = document.getElementById('btn-logout');
 if (headerLogoutBtn) headerLogoutBtn.onclick = confirmLogout;
+
+// ── AI Conversation Summarizer ────────────────────────────────────────────
+const btnSummarize    = document.getElementById('btn-summarize');
+const summaryModal    = document.getElementById('summary-modal');
+const btnCloseSummary = document.getElementById('btn-close-summary');
+const summaryLoading  = document.getElementById('summary-loading');
+const summaryText     = document.getElementById('summary-text');
+
+// Tracks all messages in the current conversation for summarizing
+let conversationLog = [];
+
+if (btnSummarize) {
+    btnSummarize.onclick = async () => {
+        if (!activeRecipientId) return;
+
+        // Show modal with loading state
+        summaryModal.classList.remove('hidden');
+        summaryLoading.classList.remove('hidden');
+        summaryText.classList.add('hidden');
+        summaryText.innerHTML = '';
+
+        try {
+            const res = await fetch('/api/chat/summarize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: conversationLog })
+            });
+
+            const data = await res.json();
+
+            summaryLoading.classList.add('hidden');
+            summaryText.classList.remove('hidden');
+
+            if (!res.ok) {
+                summaryText.innerHTML = `<p style="color:#ef4444">${data.message || 'Summarization failed.'}</p>`;
+                return;
+            }
+
+            // Render the bullet points
+            const badge = `<div class="summary-badge"><i class="fa-solid fa-robot"></i> Powered by Groq LLaMA 3</div>`;
+            const points = data.points.map(p =>
+                `<div class="summary-point">
+                    <i class="fa-solid fa-circle-dot"></i>
+                    <span>${p}</span>
+                </div>`
+            ).join('');
+
+            summaryText.innerHTML = badge + points;
+
+        } catch (err) {
+            summaryLoading.classList.add('hidden');
+            summaryText.classList.remove('hidden');
+            summaryText.innerHTML = `<p style="color:#ef4444">Connection error. Please try again.</p>`;
+        }
+    };
+}
+
+if (btnCloseSummary) {
+    btnCloseSummary.onclick = () => summaryModal.classList.add('hidden');
+}
+
+// Close modal on backdrop click
+if (summaryModal) {
+    summaryModal.onclick = (e) => {
+        if (e.target === summaryModal) summaryModal.classList.add('hidden');
+    };
+}

@@ -145,6 +145,16 @@ module.exports = (io) => {
             }
         });
 
+        // --- SCREENSHOT DETECTION ---
+        socket.on('screenshotTaken', (data) => {
+            const recipient = onlineUsers.get(data.to);
+            if (recipient) {
+                io.to(recipient.socketId).emit('screenshotAlert', {
+                    fromName: data.fromName
+                });
+            }
+        });
+
         // --- DISCONNECTION ---
         socket.on('disconnect', () => {
             for (const [uid, user] of onlineUsers.entries()) {
