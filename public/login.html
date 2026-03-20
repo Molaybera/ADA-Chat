@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat | Login</title>
+    <link rel="stylesheet" href="./css/login.css">
+    <!-- Font Awesome for the spinner icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="card-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-right-to-bracket"></i>   
+                </div>
+                
+                <h1>Welcome Back</h1>
+                <p>Enter your credentials to receive your secure OTP</p>
+            </div>
+
+            <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="login-email" placeholder="name@company.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button id="btn-login" class="primary-btn">
+                <span id="btn-text">Send Verification Code</span>
+                <span id="btn-loader" class="hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Processing...
+                </span>
+            </button>
+
+            <div class="card-footer">
+                <p>New to the platform? <a href="register.html">Create an account</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/login.js"></script>
+</body>
+</html>

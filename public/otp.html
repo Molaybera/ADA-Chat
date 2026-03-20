@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat | Verify OTP</title>
+    <link rel="stylesheet" href="./css/otp.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="otp-wrapper">
+        <div class="otp-card">
+            <div class="card-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h1>Verify Identity</h1>
+                <p>We've sent a 6-digit code to your email.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="otp-code">Verification Code</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa- fingerprint"></i>
+                    <input type="text" id="otp-code" placeholder="000000" maxlength="6" autocomplete="off" required>
+                </div>
+            </div>
+
+            <button id="btn-verify" class="primary-btn">
+                <span id="btn-text">Verify & Access Chat</span>
+                <span id="btn-loader" class="hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Verifying...
+                </span>
+            </button>
+
+            <div class="card-footer">
+                <p>Didn't receive the code? <a href="login.html">Try again</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/otp.js"></script>
+</body>
+</html>

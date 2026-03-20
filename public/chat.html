@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Messenger | Premium UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/chat.css">
+</head>
+<body>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <!-- Call Overlay -->
+    <div id="call-overlay" class="hidden">
+        <div id="call-info">
+            <div id="call-avatar">?</div>
+            <h2 id="call-status-text">Encrypted Connection...</h2>
+            <p id="caller-name">User Name</p>
+        </div>
+
+        <div id="video-grid" class="hidden">
+            <!-- Remote: full background -->
+            <video id="remote-video" autoplay playsinline></video>
+
+            <!-- Remote avatar (shown when remote has no video) -->
+            <div id="remote-avatar-overlay">
+                <div class="av-circle" id="remote-av-initial">?</div>
+                <span class="av-name" id="remote-av-name"></span>
+            </div>
+
+            <!-- Local: PiP bottom-right -->
+            <video id="local-video" autoplay playsinline muted></video>
+
+            <!-- Local avatar (shown when camera off or unavailable) -->
+            <div id="local-avatar-overlay">
+                <div class="av-circle" id="local-av-initial">?</div>
+                <span class="av-label">Camera off</span>
+            </div>
+        </div>
+
+        <div id="call-actions" style="display: flex; gap: 24px;">
+            <button id="btn-accept-call" class="call-btn-circle hidden" title="Accept Call">
+                <i class="fa-solid fa-phone"></i>
+            </button>
+            <button id="btn-hangup" class="call-btn-circle" title="End Call">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+            <button id="btn-toggle-mic" class="call-btn-circle" title="Toggle Mic">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button id="btn-toggle-camera" class="call-btn-circle hidden" title="Turn Camera Off">
+                <i class="fa-solid fa-video"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="profile-section">
+                    <div class="my-avatar"><i class="fa-solid fa-user-shield"></i></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span id="user-display" style="font-weight: 800; font-size: 16px; letter-spacing: -0.3px;">Admin</span>
+                        <span style="font-size: 11px; color: var(--online); font-weight: 600; text-transform: uppercase;">• Shield Active</span>
+                    </div>
+                </div>
+                <div class="icon-btn" style="position: relative;">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </div>
+            </header>
+
+            <div class="contacts-list" id="user-list-content">
+                <div class="empty-state">
+                    <p style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">Waiting for connection...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <section class="chat-area">
+            <header class="chat-header" id="chat-header" style="display: none;">
+                <div class="active-user">
+                    <div class="my-avatar" id="active-avatar" style="width: 44px; height: 44px; border-radius: 14px; font-size: 18px;">?</div>
+                    <div>
+                        <div class="active-name" id="active-chat-user">Target User</div>
+                        <div class="active-status">Active Secure Line</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="icon-btn" id="btn-voice-call" title="Voice Call" style="color: var(--primary);">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div class="icon-btn" id="btn-video-call" title="Video Call" style="color: var(--primary);">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+                    <div class="icon-btn" id="btn-logout" style="color: var(--call-danger);" title="Secure Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
+                </div>
+            </header>
+
+            <main class="chat-window" id="chat-window">
+                <div class="empty-chat-state" id="welcome-screen">
+                    <div class="shield-icon" style="background: rgba(16, 185, 129, 0.05); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h2 style="font-weight: 800; letter-spacing: -0.5px;">Zero-Knowledge Messenger</h2>
+                    <p>Establish a secure tunnel to begin communicating. Voice and Video calls are peer-to-peer and protected by hardware-level encryption.</p>
+                </div>
+            </main>
+
+            <footer class="input-area" id="chat-input-area" style="display: none; position: relative;">
+                <div class="input-wrapper">
+                    <div class="icon-btn">
+                        <label for="file-input" style="cursor: pointer;">
+                            <i class="fa-solid fa-plus"></i>
+                        </label>
+                    </div>
+                    <input type="file" id="file-input" accept="image/*, .pdf, .docx, .txt" hidden>
+                    <input type="text" id="msg-input" placeholder="Type a secure message...">
+                    <div class="icon-btn send-btn" id="btn-send">
+                        <span id="send-icon"><i class="fa-solid fa-paper-plane"></i></span>
+                        <span id="send-loader" class="hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                    </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./js/chat.js" defer></script>
+</body>
+</html>

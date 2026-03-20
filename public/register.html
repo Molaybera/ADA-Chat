@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat | Register</title>
+    <link rel="stylesheet" href="./css/register.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="register-wrapper">
+        <div class="register-card">
+            <div class="card-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h1>Create Account</h1>
+                <p>Join our secure network in seconds</p>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-name">Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="reg-name" placeholder="John Doe" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-email">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="reg-email" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="reg-password" placeholder="••••••••" required>
+                </div>
+                <!-- This container is outside the input-wrapper to prevent UI overlap -->
+                <div id="password-validation-box" class="validation-container"></div>
+            </div>
+
+            <button id="btn-register" class="primary-btn">
+                <span id="btn-text">Create Account</span>
+                <span id="btn-loader" class="hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Registering...
+                </span>
+            </button>
+
+            <div class="card-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/register.js"></script>
+</body>
+</html>
