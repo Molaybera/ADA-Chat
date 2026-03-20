@@ -1,12 +1,10 @@
 /**
- * Secure Chat & WebRTC Calling Logic
- * Optimized for Production: Handshake buffering, Avatar management, and UI toggles.
- * FILEPATH: public/js/chat.js
+ * Secure Chat & WebRTC Logic
+ * Fully stable version with ICE buffering and Avatar management.
+ * Preserves all logic for messaging, file transfer, and high-fidelity calling.
  */
-
 const socket = io();
 
-// 1. STATE & DATA RETRIEVAL
 const token = sessionStorage.getItem('token');
 const userName = sessionStorage.getItem('userName');
 const userId = sessionStorage.getItem('userId');
@@ -24,17 +22,10 @@ let callStartFormatted = null;
 let isVideoCall = false;
 let cameraEnabled = true;
 let activeCallType = 'voice';
-const iceServers = { 
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-    ] 
-};
-
-// ICE Candidate Buffer (Prevents race conditions during handshake)
+const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 let pendingIceCandidates = [];
 
-// UI SELECTORS
+// UI Selectors
 const chatWindow = document.getElementById('chat-window');
 const msgInput = document.getElementById('msg-input');
 const fileInput = document.getElementById('file-input');
@@ -47,7 +38,6 @@ const chatInputArea = document.getElementById('chat-input-area');
 const welcomeScreen = document.getElementById('welcome-screen');
 const userDisplay = document.getElementById('user-display');
 
-// Call UI
 const callOverlay = document.getElementById('call-overlay');
 const callAvatar = document.getElementById('call-avatar');
 const callStatusText = document.getElementById('call-status-text');
@@ -60,7 +50,6 @@ const btnHangup = document.getElementById('btn-hangup');
 const btnToggleMic = document.getElementById('btn-toggle-mic');
 const btnToggleCamera = document.getElementById('btn-toggle-camera');
 
-// Avatar overlays (for when camera is off)
 const localAvatarOverlay = document.getElementById('local-avatar-overlay');
 const localAvInitial = document.getElementById('local-av-initial');
 const remoteAvatarOverlay = document.getElementById('remote-avatar-overlay');
@@ -68,8 +57,6 @@ const remoteAvInitial = document.getElementById('remote-av-initial');
 const remoteAvName = document.getElementById('remote-av-name');
 
 const menuTrigger = document.querySelector('.fa-ellipsis-vertical')?.parentElement;
-
-// ── UTILITIES ────────────────────────────────────────────────────────────────
 
 function scrollToBottom() {
     if (chatWindow) chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -83,16 +70,12 @@ function fmtDuration(secs) {
     return `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
 
-// ── AUTH GUARD ───────────────────────────────────────────────────────────────
-
 if (!token || !userId) {
     window.location.href = 'login.html';
 } else {
     if (userDisplay) userDisplay.innerText = userName;
     socket.emit('registerUser', { userId, userName });
 }
-
-// ── USER LIST ────────────────────────────────────────────────────────────────
 
 socket.on('updateUserList', (users) => {
     onlineUsers = users.filter(u => u.userId !== userId);
@@ -117,8 +100,6 @@ function renderUserList() {
         userListContent.appendChild(item);
     });
 }
-
-// ── SELECT CONTACT ───────────────────────────────────────────────────────────
 
 async function selectContact(user) {
     activeRecipientId = user.userId;
@@ -146,8 +127,6 @@ async function selectContact(user) {
     } catch (err) { console.error("History fetch failed:", err); }
     renderUserList();
 }
-
-// ── MESSAGING ────────────────────────────────────────────────────────────────
 
 function sendMessage() {
     if (!activeRecipientId) return;
@@ -204,8 +183,6 @@ if (fileInput) {
         reader.readAsDataURL(file);
     };
 }
-
-// ── WEBRTC HELPERS ───────────────────────────────────────────────────────────
 
 function attachStream(videoEl, stream) {
     videoEl.srcObject = stream;
@@ -290,8 +267,6 @@ function createPeerConnection(remoteTargetId) {
     return pc;
 }
 
-// ── CALLER ───────────────────────────────────────────────────────────────────
-
 async function initCall(type) {
     if (!activeRecipientId) return;
     if (peerConnection) terminateCall(false);
@@ -335,8 +310,6 @@ async function initCall(type) {
         setTimeout(() => terminateCall(false), 1500);
     }
 }
-
-// ── CALLEE ───────────────────────────────────────────────────────────────────
 
 socket.on('incoming-call', async (data) => {
     if (peerConnection) { socket.emit('hang-up', { to: data.from, reason: 'busy' }); return; }
@@ -399,8 +372,6 @@ socket.on('incoming-call', async (data) => {
     };
 });
 
-// ── SIGNALING ────────────────────────────────────────────────────────────────
-
 socket.on('call-answered', async (data) => {
     if (peerConnection) {
         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
@@ -420,8 +391,6 @@ socket.on('ice-candidate', async (data) => {
 
 socket.on('call-ended', () => terminateCall(false));
 
-// ── TERMINATE ────────────────────────────────────────────────────────────────
-
 function terminateCall(sendSignal = true) {
     if (callStartTime) {
         const endTime = new Date();
@@ -429,15 +398,8 @@ function terminateCall(sendSignal = true) {
         const label = activeCallType === 'video' ? 'Video call' : 'Voice call';
         const content = `${label}|${callStartFormatted}|${fmtTime(endTime)}|${fmtDuration(duration)}`;
 
-        if (sendSignal) {
-            recordCallInChat(content);
-        } else {
-            renderMessage({
-                type: 'call', content,
-                senderId: activeRecipientId, receiverId: userId,
-                timestamp: new Date().toISOString()
-            }, false);
-        }
+        if (sendSignal) recordCallInChat(content);
+        else renderMessage({ type: 'call', content, senderId: activeRecipientId, receiverId: userId, timestamp: new Date().toISOString() }, false);
     } else if (activeRecipientId && sendSignal) {
         const label = activeCallType === 'video' ? 'Video call' : 'Voice call';
         recordCallInChat(`${label}|cancelled`);
@@ -502,15 +464,9 @@ function showCallOverlay(status, name) {
     if (callAvatar) callAvatar.innerText = (name || '?').charAt(0).toUpperCase();
 }
 
-// ── RENDER ───────────────────────────────────────────────────────────────────
-
 socket.on('receivePrivateMessage', (msg) => {
-    if (msg.senderId === activeRecipientId) {
-        renderMessage(msg, false);
-    } else {
-        unreadCounts[msg.senderId] = (unreadCounts[msg.senderId] || 0) + 1;
-        renderUserList();
-    }
+    if (msg.senderId === activeRecipientId) renderMessage(msg, false);
+    else { unreadCounts[msg.senderId] = (unreadCounts[msg.senderId] || 0) + 1; renderUserList(); }
 });
 
 function renderMessage(msg, isSelf) {
@@ -520,36 +476,20 @@ function renderMessage(msg, isSelf) {
         const parts = msg.content.split('|');
         const label = parts[0];
         const isCancelled = parts[1] === 'cancelled';
-
         let bubbleHtml;
         if (isCancelled) {
-            bubbleHtml = `
-                <div class="call-log-bubble missed">
-                    <i class="fa-solid fa-phone-slash"></i>
-                    <div class="call-log-text">
-                        <span class="call-log-label">${label}</span>
-                        <span class="call-log-meta">Cancelled</span>
-                    </div>
-                </div>`;
+            bubbleHtml = `<div class="call-log-bubble missed"><i class="fa-solid fa-phone-slash"></i><div class="call-log-text"><span class="call-log-label">${label}</span><span class="call-log-meta">Cancelled</span></div></div>`;
         } else {
             const startTime = parts[1] || '';
             const endTime   = parts[2] || '';
             const duration  = parts[3] || '';
-            bubbleHtml = `
-                <div class="call-log-bubble success">
-                    <i class="fa-solid fa-phone-flip"></i>
-                    <div class="call-log-text">
-                        <span class="call-log-label">${label} · ${duration}</span>
-                        <span class="call-log-meta">${startTime} – ${endTime}</span>
-                    </div>
-                </div>`;
+            bubbleHtml = `<div class="call-log-bubble success"><i class="fa-solid fa-phone-flip"></i><div class="call-log-text"><span class="call-log-label">${label} · ${duration}</span><span class="call-log-meta">${startTime} – ${endTime}</span></div></div>`;
         }
         log.innerHTML = bubbleHtml;
         chatWindow.appendChild(log);
         scrollToBottom();
         return;
     }
-
     const row = document.createElement('div');
     row.className = `msg-row ${isSelf ? 'self' : 'other'}`;
     const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -557,13 +497,10 @@ function renderMessage(msg, isSelf) {
     if (msg.type === 'text') contentHtml = `<p>${msg.content}</p>`;
     else if (msg.type === 'image') contentHtml = `<img src="${msg.content}" style="max-width:250px;border-radius:12px;">`;
     else if (msg.type === 'file') contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
-
     row.innerHTML = `<div class="bubble">${contentHtml}<div class="bubble-meta">${time}</div></div>`;
     chatWindow.appendChild(row);
     scrollToBottom();
 }
-
-// ── BUTTON HANDLERS ───────────────────────────────────────────────────────────
 
 document.getElementById('btn-voice-call').onclick = () => initCall('voice');
 document.getElementById('btn-video-call').onclick = () => initCall('video');
@@ -591,8 +528,6 @@ btnToggleCamera.onclick = () => {
     setLocalAvatar(!cameraEnabled);
 };
 
-// ── LOGOUT / DROPDOWN ────────────────────────────────────────────────────────
-
 if (menuTrigger) {
     menuTrigger.onclick = (e) => {
         e.stopPropagation();
@@ -600,10 +535,7 @@ if (menuTrigger) {
         if (existing) { existing.remove(); return; }
         const menu = document.createElement('div');
         menu.id = 'sidebar-dropdown-menu';
-        Object.assign(menu.style, {
-            position: 'absolute', top: '70px', left: '24px', background: '#1e293b',
-            border: '1px solid var(--border)', borderRadius: '12px', padding: '8px', zIndex: '1000'
-        });
+        Object.assign(menu.style, { position: 'absolute', top: '70px', left: '24px', background: '#1e293b', border: '1px solid var(--border)', borderRadius: '12px', padding: '8px', zIndex: '1000' });
         menu.innerHTML = `<div id="dropdown-logout" style="padding:10px;cursor:pointer;color:#ef4444"><i class="fa-solid fa-triangle-exclamation"></i> Secure Logout</div>`;
         menuTrigger.parentElement.appendChild(menu);
         document.getElementById('dropdown-logout').onclick = confirmLogout;

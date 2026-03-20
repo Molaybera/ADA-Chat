@@ -1,9 +1,14 @@
 const User = require('../models/User'); 
 const jwt = require('jsonwebtoken');
-const { Resend } = require('resend');
+const brevo = require('@getbrevo/brevo');
 
-// Initialize Resend with your API Key from Render Environment Variables
-const resend = new Resend(process.env.RESEND_API_KEY);
+/**
+ * AUTH CONTROLLER - Brevo API Edition
+ * This uses the HTTPS API to bypass all Render SMTP port blocks.
+ */
+const apiInstance = new brevo.TransactionalEmailsApi();
+const apiKey = apiInstance.authentications['apiKey'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 exports.register = async (req, res) => {
     try {
@@ -15,6 +20,7 @@ exports.register = async (req, res) => {
         await user.save();
         res.status(201).json({ message: "Registration successful!" });
     } catch (error) {
+        console.error("Registration Error:", error);
         res.status(500).json({ message: "Server error during registration." });
     }
 };
@@ -33,28 +39,36 @@ exports.login = async (req, res) => {
         user.otpExpires = Date.now() + 10 * 60 * 1000; 
         await user.save();
 
-        // Send OTP via Resend API (Bypasses Render's port blocks)
-        const { data, error } = await resend.emails.send({
-            from: 'Secure Chat <onboarding@resend.dev>',
-            to: [email],
-            subject: '🔒 Your Verification Code',
-            html: `
-                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 20px; padding: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                    <h2 style="color: #00d4ff;">Security Verification</h2>
-                    <p>Enter the code below to access your account:</p>
-                    <h1 style="font-size: 48px; letter-spacing: 8px; margin: 20px 0;">${otp}</h1>
-                    <p style="font-size: 12px; color: #94a3b8;">Code expires in 10 minutes.</p>
-                </div>`
-        });
+        console.log(`[BREVO] Delivering OTP to: ${email}`);
 
-        if (error) {
-            console.error("Resend API Error:", error);
-            return res.status(500).json({ message: "Failed to send OTP." });
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = "🔒 Your Verification Code";
+        sendSmtpEmail.htmlContent = `
+            <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 24px; padding: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="margin-bottom: 20px; font-size: 40px;">🛡️</div>
+                <h2 style="color: #00d4ff; margin-bottom: 10px;">Security Code</h2>
+                <p style="color: #94a3b8; font-size: 14px;">Use the code below to access your account. It expires in 10 minutes.</p>
+                <div style="background: rgba(255,255,255,0.05); border: 1px dashed #00d4ff; border-radius: 12px; padding: 20px; margin: 25px 0;">
+                    <span style="font-size: 42px; font-weight: 800; letter-spacing: 8px; color: #00d4ff;">${otp}</span>
+                </div>
+                <p style="font-size: 11px; color: #475569;">&copy; 2026 ADA Chat Secure Network</p>
+            </div>`;
+        
+        sendSmtpEmail.sender = { "name": "ADA Chat Support", "email": "verify@adachat.io" };
+        sendSmtpEmail.to = [{ "email": email }];
+
+        try {
+            await apiInstance.sendTransacEmail(sendSmtpEmail);
+            console.log('✅ [BREVO] Email sent to:', email);
+            res.status(200).json({ message: "OTP sent to your email." });
+        } catch (apiError) {
+            console.error("🚨 [BREVO ERROR]:", apiError.response?.body || apiError);
+            res.status(500).json({ message: "Email delivery failed." });
         }
 
-        res.status(200).json({ message: "OTP sent to your email." });
     } catch (error) {
-        res.status(500).json({ message: "Login processing failed." });
+        console.error("Login processing failed:", error);
+        res.status(500).json({ message: "Internal login failure." });
     }
 };
 
@@ -63,7 +77,7 @@ exports.verifyOTP = async (req, res) => {
         const { email, otp } = req.body;
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User not found" });
-        if (user.otp !== otp || user.otpExpires < Date.now()) return res.status(400).json({ message: "Invalid OTP" });
+        if (user.otp !== otp || user.otpExpires < Date.now()) return res.status(400).json({ message: "Invalid or expired OTP" });
         
         user.otp = null;
         user.otpExpires = null;
