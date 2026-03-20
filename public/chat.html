@@ -79,6 +79,7 @@
             </header>
 
             <div class="contacts-list" id="user-list-content">
+                <span class="contacts-list-label">Online Now</span>
                 <div class="empty-state">
                     <p style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">Waiting for connection...</p>
                 </div>
@@ -112,6 +113,10 @@
                     <div class="icon-btn" id="btn-logout" style="color: var(--call-danger);" title="Secure Logout">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </div>
+                    <!-- Mobile only: toggle action bar -->
+                    <div class="icon-btn" id="chat-header-menu-btn" title="More">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </div>
                 </div>
             </header>
 
@@ -143,6 +148,26 @@
                     </div>
                 </div>
             </footer>
+
+            <!-- Mobile-only quick action bar (shown above input) -->
+            <div id="mobile-action-bar" class="mobile-action-bar hidden">
+                <div class="mob-action-btn" id="mob-btn-summarize">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Summarize</span>
+                </div>
+                <div class="mob-action-btn" id="mob-btn-voice">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>Voice</span>
+                </div>
+                <div class="mob-action-btn" id="mob-btn-video">
+                    <i class="fa-solid fa-video"></i>
+                    <span>Video</span>
+                </div>
+                <div class="mob-action-btn danger" id="mob-btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </div>
+            </div>
         </section>
     </div>
 

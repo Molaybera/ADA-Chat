@@ -674,3 +674,23 @@ if (summaryModal) {
         if (e.target === summaryModal) summaryModal.classList.add('hidden');
     };
 }
+
+// ── Mobile action bar ─────────────────────────────────────────────────────
+const mobileActionBar   = document.getElementById('mobile-action-bar');
+const chatHeaderMenuBtn = document.getElementById('chat-header-menu-btn');
+
+if (chatHeaderMenuBtn) {
+    chatHeaderMenuBtn.onclick = () => {
+        mobileActionBar?.classList.toggle('hidden');
+    };
+}
+
+const mobBtnSummarize = document.getElementById('mob-btn-summarize');
+const mobBtnVoice     = document.getElementById('mob-btn-voice');
+const mobBtnVideo     = document.getElementById('mob-btn-video');
+const mobBtnLogout    = document.getElementById('mob-btn-logout');
+
+if (mobBtnSummarize) mobBtnSummarize.onclick = () => { mobileActionBar?.classList.add('hidden'); btnSummarize?.click(); };
+if (mobBtnVoice)     mobBtnVoice.onclick     = () => { mobileActionBar?.classList.add('hidden'); initCall('voice'); };
+if (mobBtnVideo)     mobBtnVideo.onclick     = () => { mobileActionBar?.classList.add('hidden'); initCall('video'); };
+if (mobBtnLogout)    mobBtnLogout.onclick    = () => { mobileActionBar?.classList.add('hidden'); confirmLogout(); };
