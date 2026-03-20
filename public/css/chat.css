@@ -636,162 +636,156 @@ body {
 
     body {
         overflow: hidden;
+        height: 100vh;
         height: 100dvh;
-        height: 100vh; /* fallback */
     }
 
     .app-container {
-        flex-direction: column;
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
         position: relative;
         overflow: hidden;
-        height: 100dvh;
-        height: 100vh;
     }
 
-    /* ── Mobile Sidebar (Contacts Screen) ── */
+    /* ── Sidebar — full screen, shown by default ── */
     .sidebar {
-        width: 100%;
-        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        width: 100vw;
         height: 100vh;
+        height: 100dvh;
         position: absolute;
         top: 0; left: 0;
         z-index: 20;
-        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         background: var(--sidebar-bg);
-        display: flex;
-        flex-direction: column;
     }
-    .sidebar.hidden-mobile {
-        transform: translateX(-100%);
-        pointer-events: none;
-    }
+    .sidebar.hidden-mobile { display: none; }
 
-    /* Mobile sidebar header */
     .sidebar-header {
-        padding: 48px 20px 16px;
-        background: linear-gradient(180deg, rgba(0,212,255,0.06) 0%, transparent 100%);
-        border-bottom: 1px solid var(--border);
         flex-shrink: 0;
+        padding: 48px 20px 16px;
+        border-bottom: 1px solid var(--border);
     }
-    .profile-section { gap: 14px; }
-    .my-avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 22px; }
-    #user-display { font-size: 18px !important; }
-
     .contacts-list-label {
         display: block;
-        padding: 14px 20px 8px;
+        flex-shrink: 0;
+        padding: 12px 20px 6px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
         color: var(--text-muted);
-        flex-shrink: 0;
     }
-    .contacts-list { flex: 1; overflow-y: auto; padding-bottom: 20px; min-height: 0; }
-    .contact-item {
-        padding: 14px 20px; gap: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.03);
+    .contacts-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
-    .contact-item.active {
-        background: linear-gradient(to right, rgba(0,212,255,0.12), transparent);
-        border-left: 3px solid var(--primary);
-    }
+    .contact-item { padding: 14px 20px; gap: 14px; }
     .contact-avatar { width: 48px; height: 48px; border-radius: 50%; font-size: 18px; }
-    .online-dot { width: 12px; height: 12px; border: 2px solid var(--sidebar-bg); }
     .contact-name { font-size: 15px; }
 
-    /* ── Mobile Chat Area — KEY FIX ── */
+    /* ── Chat area — hidden until contact selected ── */
     .chat-area {
-        width: 100%;
-        height: 100dvh;
+        display: none;
+        flex-direction: column;
+        width: 100vw;
         height: 100vh;
+        height: 100dvh;
         position: absolute;
         top: 0; left: 0;
-        transform: translateX(100%);
-        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
+        z-index: 20;
+        background: var(--chat-bg);
         overflow: hidden;
     }
-    .chat-area.visible-mobile { transform: translateX(0); }
+    .chat-area.visible-mobile {
+        display: flex;
+    }
 
-    /* ── Mobile Chat Header ── */
+    /* ── Header ── */
     .chat-header {
         flex-shrink: 0;
         padding: 10px 10px 10px 4px;
         min-height: 58px;
-        gap: 0;
         background: rgba(11, 15, 26, 0.98);
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
     }
-    .active-user { gap: 8px; flex: 1; min-width: 0; overflow: hidden; }
+    .active-user { gap: 8px; flex: 1; min-width: 0; }
     .btn-back-mobile {
         display: flex !important;
         width: 38px; height: 38px;
-        font-size: 18px; margin-right: 0;
-        flex-shrink: 0; color: var(--primary);
+        font-size: 20px; flex-shrink: 0;
+        color: var(--primary); align-items: center; justify-content: center;
     }
     #active-avatar {
         width: 36px !important; height: 36px !important;
         border-radius: 50% !important; font-size: 14px !important;
         flex-shrink: 0;
     }
-    .active-user > div:last-of-type { min-width: 0; overflow: hidden; }
     .active-name {
-        font-size: 14px; white-space: nowrap;
-        overflow: hidden; text-overflow: ellipsis; max-width: 140px;
+        font-size: 14px; font-weight: 700;
+        white-space: nowrap; overflow: hidden;
+        text-overflow: ellipsis; max-width: 150px;
     }
     .active-status { font-size: 10px; }
 
+    /* Hide desktop header buttons, show only ⋮ */
     .chat-header > div:last-child > div[style*="width: 1px"],
     .chat-header #btn-logout,
     .chat-header #btn-summarize,
     .chat-header #btn-voice-call,
     .chat-header #btn-video-call { display: none !important; }
-
-    .chat-header > div:last-child { gap: 0; flex-shrink: 0; }
+    .chat-header > div:last-child { flex-shrink: 0; }
     #chat-header-menu-btn {
         display: flex !important;
         width: 38px; height: 38px;
         border-radius: 10px; color: var(--text-dim);
+        align-items: center; justify-content: center;
     }
 
-    /* ── Chat Window — scrollable middle section ── */
+    /* ── Chat window ── */
     .chat-window {
         flex: 1;
         min-height: 0;
-        padding: 12px 12px 8px;
-        gap: 6px;
+        padding: 12px;
+        gap: 8px;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    /* ── Input Area — always visible at bottom ── */
+    /* ── Input area ── */
     .input-area {
-        flex-shrink: 0 !important;
-        display: block !important; /* override any inline hide */
-        padding: 8px 10px !important;
-        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
-        background: rgba(11, 15, 26, 0.98);
-        border-top: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+        padding: 10px !important;
+        padding-bottom: max(14px, env(safe-area-inset-bottom)) !important;
+        background: rgba(11, 15, 26, 0.98) !important;
+        border-top: 1px solid rgba(255,255,255,0.07) !important;
+        display: block !important;
     }
-    /* But hide it when chat hasn't started yet */
-    .input-area[style*="display: none"] {
-        display: none !important;
-    }
-
     .input-wrapper {
-        border-radius: 24px;
-        padding: 4px 6px 4px 12px;
-        gap: 4px;
+        border-radius: 28px;
+        padding: 5px 6px 5px 14px;
+        gap: 6px;
         background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.09);
+        align-items: center;
     }
-    .input-wrapper input { font-size: 14px; padding: 8px 4px; }
-    .input-wrapper .icon-btn { width: 34px; height: 34px; border-radius: 50%; font-size: 14px; }
+    .input-wrapper input {
+        font-size: 15px;
+        padding: 7px 4px;
+    }
+    .input-wrapper .icon-btn {
+        width: 34px; height: 34px;
+        border-radius: 50%; font-size: 14px;
+    }
     .send-btn {
-        width: 36px !important; height: 36px !important;
-        border-radius: 50% !important; font-size: 15px !important;
+        width: 38px !important; height: 38px !important;
+        border-radius: 50% !important; font-size: 16px !important;
     }
 
     /* ── Bubbles ── */
@@ -800,11 +794,11 @@ body {
         font-size: 14px;
         padding: 9px 13px;
         border-radius: 16px;
-        line-height: 1.45;
+        line-height: 1.5;
     }
     .self .bubble  { border-bottom-right-radius: 4px; }
     .other .bubble { border-bottom-left-radius: 4px; }
-    .bubble-meta   { font-size: 10px; margin-top: 3px; gap: 3px; }
+    .bubble-meta   { font-size: 10px; margin-top: 3px; }
     .enc-indicator { display: none !important; }
 
     /* ── Call overlay ── */
@@ -818,12 +812,12 @@ body {
     #local-video          { width: 90px; bottom: 10px; right: 10px; }
     #local-avatar-overlay { width: 90px; height: 51px; bottom: 10px; right: 10px; }
 
-    /* ── AI Summary bottom sheet ── */
+    /* ── Summary bottom sheet ── */
     .summary-modal { align-items: flex-end; padding: 0; }
     .summary-modal-box {
         border-radius: 24px 24px 0 0;
         max-width: 100%; width: 100%;
-        animation: slideUpSheet 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: slideUpSheet 0.3s ease;
     }
     .summary-modal-box::before {
         content: ''; display: block;
@@ -831,9 +825,9 @@ body {
         background: rgba(255,255,255,0.15);
         border-radius: 4px; margin: 12px auto 0;
     }
-    .summary-modal-header { padding: 16px 20px; }
+    .summary-modal-header { padding: 14px 20px; }
     .summary-modal-body {
-        padding: 16px 20px;
+        padding: 14px 20px;
         max-height: 65vh;
         padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
