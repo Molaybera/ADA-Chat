@@ -810,3 +810,64 @@ body {
     .summary-modal-box { border-radius: 16px; }
     .summary-modal-body { max-height: 70vh; }
 }
+
+/* ── Voice recording indicator ────────────────────────────────────────────── */
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    margin-top: 8px;
+    animation: fadeIn 0.2s ease;
+}
+.recording-indicator.hidden { display: none !important; }
+
+.rec-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ef4444;
+    flex-shrink: 0;
+    animation: recPulse 1s infinite;
+}
+@keyframes recPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.8); }
+}
+
+#rec-timer {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ef4444;
+    min-width: 32px;
+}
+
+#btn-voice-record.recording {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    animation: recPulse 1s infinite;
+}
+
+/* Voice message bubble */
+.voice-bubble {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    min-width: 200px;
+}
+.voice-bubble i { font-size: 16px; opacity: 0.8; }
+.voice-transcript {
+    font-size: 13px;
+    line-height: 1.5;
+    flex: 1;
+}
+.voice-label {
+    font-size: 10px;
+    opacity: 0.5;
+    display: block;
+    margin-top: 2px;
+}

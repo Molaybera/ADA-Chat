@@ -1,67 +1,68 @@
 /**
  * Secure Chat & WebRTC Logic
- * Fully stable version with ICE buffering and Avatar management.
- * Preserves all logic for messaging, file transfer, and high-fidelity calling.
+ * Features: Messaging, File Transfer, Voice/Video Calls,
+ *           AI Summarizer, AI Message Polisher, Mobile Responsive
  */
 const socket = io();
 
-const token = localStorage.getItem('token');
+const token    = localStorage.getItem('token');
 const userName = localStorage.getItem('userName');
-const userId = localStorage.getItem('userId');
+const userId   = localStorage.getItem('userId');
 
 let activeRecipientId = null;
-let onlineUsers = [];
-let unreadCounts = {};
-let stagedFile = null;
+let onlineUsers       = [];
+let unreadCounts      = {};
+let stagedFile        = null;
+let conversationLog   = [];
 
 // WebRTC State
-let peerConnection = null;
-let localStream = null;
-let callStartTime = null;
+let peerConnection    = null;
+let localStream       = null;
+let callStartTime     = null;
 let callStartFormatted = null;
-let isVideoCall = false;
-let cameraEnabled = true;
-let activeCallType = 'voice';
-const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
+let isVideoCall       = false;
+let cameraEnabled     = true;
+let activeCallType    = 'voice';
+const iceServers      = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 let pendingIceCandidates = [];
 
 // UI Selectors
-const chatWindow = document.getElementById('chat-window');
-const msgInput = document.getElementById('msg-input');
-const fileInput = document.getElementById('file-input');
-const sendBtn = document.getElementById('btn-send');
+const chatWindow     = document.getElementById('chat-window');
+const msgInput       = document.getElementById('msg-input');
+const fileInput      = document.getElementById('file-input');
+const sendBtn        = document.getElementById('btn-send');
 const userListContent = document.getElementById('user-list-content');
-const chatHeader = document.getElementById('chat-header');
+const chatHeader     = document.getElementById('chat-header');
 const activeChatUser = document.getElementById('active-chat-user');
-const activeAvatar = document.getElementById('active-avatar');
-const chatInputArea = document.getElementById('chat-input-area');
-const welcomeScreen = document.getElementById('welcome-screen');
-const userDisplay = document.getElementById('user-display');
+const activeAvatar   = document.getElementById('active-avatar');
+const chatInputArea  = document.getElementById('chat-input-area');
+const welcomeScreen  = document.getElementById('welcome-screen');
+const userDisplay    = document.getElementById('user-display');
 
-const callOverlay = document.getElementById('call-overlay');
-const callAvatar = document.getElementById('call-avatar');
+const callOverlay    = document.getElementById('call-overlay');
+const callAvatar     = document.getElementById('call-avatar');
 const callStatusText = document.getElementById('call-status-text');
 const callerNameDisplay = document.getElementById('caller-name');
-const videoGrid = document.getElementById('video-grid');
-const localVideo = document.getElementById('local-video');
-const remoteVideo = document.getElementById('remote-video');
-const btnAccept = document.getElementById('btn-accept-call');
-const btnHangup = document.getElementById('btn-hangup');
-const btnToggleMic = document.getElementById('btn-toggle-mic');
+const videoGrid      = document.getElementById('video-grid');
+const localVideo     = document.getElementById('local-video');
+const remoteVideo    = document.getElementById('remote-video');
+const btnAccept      = document.getElementById('btn-accept-call');
+const btnHangup      = document.getElementById('btn-hangup');
+const btnToggleMic   = document.getElementById('btn-toggle-mic');
 const btnToggleCamera = document.getElementById('btn-toggle-camera');
 
-const localAvatarOverlay = document.getElementById('local-avatar-overlay');
-const localAvInitial = document.getElementById('local-av-initial');
+const localAvatarOverlay  = document.getElementById('local-avatar-overlay');
+const localAvInitial      = document.getElementById('local-av-initial');
 const remoteAvatarOverlay = document.getElementById('remote-avatar-overlay');
-const remoteAvInitial = document.getElementById('remote-av-initial');
-const remoteAvName = document.getElementById('remote-av-name');
+const remoteAvInitial     = document.getElementById('remote-av-initial');
+const remoteAvName        = document.getElementById('remote-av-name');
 
 const menuTrigger = document.querySelector('.fa-ellipsis-vertical')?.parentElement;
 
 // ── Mobile navigation ──────────────────────────────────────────────────────
-const sidebar   = document.querySelector('.sidebar');
-const chatArea  = document.querySelector('.chat-area');
-const btnBack   = document.getElementById('btn-back-mobile');
+const sidebar  = document.querySelector('.sidebar');
+const chatArea = document.querySelector('.chat-area');
+const btnBack  = document.getElementById('btn-back-mobile');
 
 function showChatMobile() {
     sidebar?.classList.add('hidden-mobile');
@@ -104,8 +105,8 @@ function renderUserList() {
     userListContent.innerHTML = '';
     onlineUsers.forEach(user => {
         const unread = unreadCounts[user.userId] || 0;
-        const badge = unread > 0 ? `<div class="unread-badge">${unread}</div>` : '';
-        const item = document.createElement('div');
+        const badge  = unread > 0 ? `<div class="unread-badge">${unread}</div>` : '';
+        const item   = document.createElement('div');
         item.className = `contact-item ${activeRecipientId === user.userId ? 'active' : ''}`;
         item.innerHTML = `
             <div class="contact-avatar">${user.userName.charAt(0).toUpperCase()}<div class="online-dot"></div></div>
@@ -121,9 +122,9 @@ function renderUserList() {
 async function selectContact(user) {
     activeRecipientId = user.userId;
     unreadCounts[user.userId] = 0;
-    conversationLog = []; // ✅ reset log for new contact
+    conversationLog = [];
     resetFileStaging();
-    showChatMobile(); // ✅ switch to chat view on mobile
+    showChatMobile();
 
     if (welcomeScreen) welcomeScreen.style.display = 'none';
     if (chatHeader) chatHeader.style.display = 'flex';
@@ -135,7 +136,7 @@ async function selectContact(user) {
 
     try {
         const response = await fetch(`/api/chat/history/${user.userId}?userId=${userId}`);
-        const history = await response.json();
+        const history  = await response.json();
         chatWindow.innerHTML = '';
         if (history.length > 0) {
             history.forEach(msg => renderMessage(msg, msg.senderId === userId));
@@ -203,6 +204,52 @@ if (fileInput) {
     };
 }
 
+// ── AI Message Polisher ────────────────────────────────────────────────────
+const btnPolish = document.getElementById('btn-polish');
+
+if (btnPolish) {
+    btnPolish.onclick = async () => {
+        const text = msgInput.value.trim();
+        if (!text) {
+            msgInput.placeholder = 'Type something first!';
+            setTimeout(() => msgInput.placeholder = 'Type a secure message...', 2000);
+            return;
+        }
+
+        // Show loading state
+        btnPolish.style.pointerEvents = 'none';
+        btnPolish.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        msgInput.disabled = true;
+
+        try {
+            const res  = await fetch('/api/chat/polish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.polished) {
+                msgInput.value = data.polished;
+                // Flash green to show it worked
+                msgInput.style.borderColor = 'var(--online)';
+                setTimeout(() => msgInput.style.borderColor = '', 1500);
+            } else {
+                msgInput.placeholder = 'Polish failed. Try again.';
+                setTimeout(() => msgInput.placeholder = 'Type a secure message...', 2000);
+            }
+        } catch (err) {
+            console.error('Polish error:', err);
+        } finally {
+            btnPolish.style.pointerEvents = '';
+            btnPolish.innerHTML = '<i class="fa-solid fa-wand-sparkles"></i>';
+            msgInput.disabled = false;
+            msgInput.focus();
+        }
+    };
+}
+
+// ── WebRTC helpers ─────────────────────────────────────────────────────────
 function attachStream(videoEl, stream) {
     videoEl.srcObject = stream;
     videoEl.play().catch(e => console.warn('video.play() suppressed:', e));
@@ -220,7 +267,7 @@ function setRemoteAvatar(show) {
     const peer = onlineUsers.find(u => u.userId === activeRecipientId);
     const name = peer ? peer.userName : (callerNameDisplay?.innerText || '?');
     if (remoteAvInitial) remoteAvInitial.textContent = name.charAt(0).toUpperCase();
-    if (remoteAvName) remoteAvName.textContent = name;
+    if (remoteAvName)    remoteAvName.textContent = name;
     remoteAvatarOverlay.style.display = show ? 'flex' : 'none';
 }
 
@@ -236,8 +283,8 @@ async function acquireMedia(requestedType) {
     }
     const attempts = [
         { constraints: { video: true, audio: true }, label: 'video+audio' },
-        { constraints: { video: true, audio: false }, label: 'video only'  },
-        { constraints: { video: false, audio: true }, label: 'audio only'  },
+        { constraints: { video: true, audio: false }, label: 'video only' },
+        { constraints: { video: false, audio: true }, label: 'audio only' },
     ];
     let lastError;
     for (const a of attempts) {
@@ -269,9 +316,8 @@ function createPeerConnection(remoteTargetId) {
         }
         const hasVideo = event.streams[0].getVideoTracks().length > 0;
         setRemoteAvatar(!hasVideo);
-
         callStatusText.innerText = 'Line Secured';
-        callStartTime = new Date();
+        callStartTime     = new Date();
         callStartFormatted = fmtTime(callStartTime);
     };
 
@@ -298,8 +344,8 @@ async function initCall(type) {
 
     try {
         const { stream, actualType } = await acquireMedia(type);
-        localStream = stream;
-        isVideoCall = actualType === 'video';
+        localStream  = stream;
+        isVideoCall  = actualType === 'video';
         cameraEnabled = isVideoCall;
         activeCallType = actualType;
 
@@ -334,7 +380,7 @@ socket.on('incoming-call', async (data) => {
     if (peerConnection) { socket.emit('hang-up', { to: data.from, reason: 'busy' }); return; }
 
     activeRecipientId = data.from;
-    activeCallType = data.type;
+    activeCallType    = data.type;
 
     showCallOverlay(`Incoming ${data.type} call...`, data.fromName);
     btnAccept.classList.remove('hidden');
@@ -355,8 +401,8 @@ socket.on('incoming-call', async (data) => {
                 return;
             }
 
-            localStream = stream;
-            isVideoCall = actualType === 'video';
+            localStream   = stream;
+            isVideoCall   = actualType === 'video';
             cameraEnabled = isVideoCall;
             activeCallType = actualType;
 
@@ -412,11 +458,10 @@ socket.on('call-ended', () => terminateCall(false));
 
 function terminateCall(sendSignal = true) {
     if (callStartTime) {
-        const endTime = new Date();
+        const endTime  = new Date();
         const duration = Math.floor((endTime - callStartTime) / 1000);
-        const label = activeCallType === 'video' ? 'Video call' : 'Voice call';
-        const content = `${label}|${callStartFormatted}|${fmtTime(endTime)}|${fmtDuration(duration)}`;
-
+        const label    = activeCallType === 'video' ? 'Video call' : 'Voice call';
+        const content  = `${label}|${callStartFormatted}|${fmtTime(endTime)}|${fmtDuration(duration)}`;
         if (sendSignal) recordCallInChat(content);
         else renderMessage({ type: 'call', content, senderId: activeRecipientId, receiverId: userId, timestamp: new Date().toISOString() }, false);
     } else if (activeRecipientId && sendSignal) {
@@ -439,11 +484,11 @@ function terminateCall(sendSignal = true) {
         peerConnection = null;
     }
 
-    pendingIceCandidates = [];
-    isVideoCall = false;
-    cameraEnabled = true;
-    callStartTime = null;
-    callStartFormatted = null;
+    pendingIceCandidates  = [];
+    isVideoCall           = false;
+    cameraEnabled         = true;
+    callStartTime         = null;
+    callStartFormatted    = null;
 
     if (callAvatar) callAvatar.innerText = '?';
 
@@ -458,15 +503,15 @@ function terminateCall(sendSignal = true) {
         btnToggleMic.innerHTML = '<i class="fa-solid fa-microphone"></i>';
     }
 
-    if (localAvatarOverlay) localAvatarOverlay.style.display = 'none';
+    if (localAvatarOverlay)  localAvatarOverlay.style.display  = 'none';
     if (remoteAvatarOverlay) remoteAvatarOverlay.style.display = 'none';
 
     callOverlay.classList.add('hidden');
     videoGrid.classList.add('hidden');
     btnAccept.classList.add('hidden');
-    localVideo.style.display = 'block';
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
+    localVideo.style.display  = 'block';
+    localVideo.srcObject      = null;
+    remoteVideo.srcObject     = null;
 }
 
 function recordCallInChat(content) {
@@ -478,7 +523,7 @@ function recordCallInChat(content) {
 
 function showCallOverlay(status, name) {
     callOverlay.classList.remove('hidden');
-    callStatusText.innerText = status;
+    callStatusText.innerText   = status;
     callerNameDisplay.innerText = name;
     if (callAvatar) callAvatar.innerText = (name || '?').charAt(0).toUpperCase();
 }
@@ -490,7 +535,7 @@ socket.on('receivePrivateMessage', (msg) => {
 
 function renderMessage(msg, isSelf) {
     if (msg.type === 'call') {
-        const log = document.createElement('div');
+        const log   = document.createElement('div');
         log.className = 'msg-row call-log';
         const parts = msg.content.split('|');
         const label = parts[0];
@@ -509,18 +554,18 @@ function renderMessage(msg, isSelf) {
         scrollToBottom();
         return;
     }
-    const row = document.createElement('div');
+    const row  = document.createElement('div');
     row.className = `msg-row ${isSelf ? 'self' : 'other'}`;
     const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let contentHtml = '';
-    if (msg.type === 'text') contentHtml = `<p>${msg.content}</p>`;
+    if (msg.type === 'text')  contentHtml = `<p>${msg.content}</p>`;
     else if (msg.type === 'image') contentHtml = `<img src="${msg.content}" style="max-width:250px;border-radius:12px;">`;
-    else if (msg.type === 'file') contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
+    else if (msg.type === 'file')  contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
     const encBadge = isSelf ? `<span class="enc-indicator"><i class="fa-solid fa-lock"></i>encrypted</span>` : '';
     row.innerHTML = `<div class="bubble">${contentHtml}<div class="bubble-meta">${encBadge}${time}</div></div>`;
     chatWindow.appendChild(row);
     scrollToBottom();
-    // ✅ Track message for AI summarizer
+    // Track for AI summarizer
     conversationLog.push({
         type: msg.type,
         content: msg.content,
@@ -585,26 +630,20 @@ const btnCloseSummary = document.getElementById('btn-close-summary');
 const summaryLoading  = document.getElementById('summary-loading');
 const summaryText     = document.getElementById('summary-text');
 
-// Tracks all messages in the current conversation for summarizing
-let conversationLog = [];
-
 if (btnSummarize) {
     btnSummarize.onclick = async () => {
         if (!activeRecipientId) return;
-
-        // Show modal with loading state
         summaryModal.classList.remove('hidden');
         summaryLoading.classList.remove('hidden');
         summaryText.classList.add('hidden');
         summaryText.innerHTML = '';
 
         try {
-            const res = await fetch('/api/chat/summarize', {
+            const res  = await fetch('/api/chat/summarize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: conversationLog })
             });
-
             const data = await res.json();
 
             summaryLoading.classList.add('hidden');
@@ -615,15 +654,10 @@ if (btnSummarize) {
                 return;
             }
 
-            // Render the bullet points
-            const badge = `<div class="summary-badge"><i class="fa-solid fa-robot"></i> Powered by Groq LLaMA 3</div>`;
+            const badge  = `<div class="summary-badge"><i class="fa-solid fa-robot"></i> Powered by Groq LLaMA 3</div>`;
             const points = data.points.map(p =>
-                `<div class="summary-point">
-                    <i class="fa-solid fa-circle-dot"></i>
-                    <span>${p}</span>
-                </div>`
+                `<div class="summary-point"><i class="fa-solid fa-circle-dot"></i><span>${p}</span></div>`
             ).join('');
-
             summaryText.innerHTML = badge + points;
 
         } catch (err) {
@@ -634,11 +668,7 @@ if (btnSummarize) {
     };
 }
 
-if (btnCloseSummary) {
-    btnCloseSummary.onclick = () => summaryModal.classList.add('hidden');
-}
-
-// Close modal on backdrop click
+if (btnCloseSummary) btnCloseSummary.onclick = () => summaryModal.classList.add('hidden');
 if (summaryModal) {
     summaryModal.onclick = (e) => {
         if (e.target === summaryModal) summaryModal.classList.add('hidden');

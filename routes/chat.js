@@ -5,16 +5,13 @@ const chatController = require('../controllers/chatController');
 
 /**
  * GET /api/chat/history/:otherUserId
- * Fetches encrypted messages from DB and decrypts them before sending to user.
  */
 router.get('/history/:otherUserId', async (req, res) => {
     try {
         const { otherUserId } = req.params;
-        const currentUserId = req.query.userId; 
+        const currentUserId = req.query.userId;
 
-        if (!currentUserId) {
-            return res.status(400).json({ message: "User ID required to fetch history." });
-        }
+        if (!currentUserId) return res.status(400).json({ message: "User ID required." });
 
         const messages = await Message.find({
             $or: [
@@ -31,55 +28,39 @@ router.get('/history/:otherUserId', async (req, res) => {
 
         res.json(decryptedMessages);
     } catch (error) {
-        console.error("❌ Error fetching/decrypting history:", error);
+        console.error("❌ History Error:", error);
         res.status(500).json({ message: "Server error retrieving chat history." });
     }
 });
 
 /**
  * POST /api/chat/summarize
- * Sends conversation messages to Groq (LLaMA) and returns an AI summary.
  */
 router.post('/summarize', async (req, res) => {
     try {
         const { messages } = req.body;
-
-        if (!messages || messages.length === 0) {
+        if (!messages || messages.length === 0)
             return res.status(400).json({ message: "No messages to summarize." });
-        }
 
-        // Format messages into readable text for the AI
         const conversation = messages
             .filter(m => m.type === 'text')
             .map(m => `${m.senderName || 'User'}: ${m.content}`)
             .join('\n');
 
-        if (!conversation.trim()) {
-            return res.status(400).json({ message: "No text messages found to summarize." });
-        }
+        if (!conversation.trim())
+            return res.status(400).json({ message: "No text messages found." });
 
-        // Call Groq API
         const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
             body: JSON.stringify({
                 model: 'llama-3.1-8b-instant',
                 messages: [
                     {
                         role: 'system',
-                        content: `You are a conversation summarizer. Summarize the chat conversation into exactly 4-6 clear bullet points. 
-                        Each point should be concise (one sentence max). 
-                        Focus on: key topics discussed, decisions made, important info shared.
-                        Format: Return ONLY a JSON array of strings, no markdown, no extra text.
-                        Example: ["Point one here", "Point two here", "Point three here"]`
+                        content: `You are a conversation summarizer. Summarize into exactly 4-6 clear bullet points. Each point one sentence max. Focus on: key topics, decisions, important info. Return ONLY a JSON array of strings, no markdown, no extra text. Example: ["Point one", "Point two"]`
                     },
-                    {
-                        role: 'user',
-                        content: `Summarize this conversation:\n\n${conversation}`
-                    }
+                    { role: 'user', content: `Summarize this:\n\n${conversation}` }
                 ],
                 max_tokens: 500,
                 temperature: 0.3
@@ -87,28 +68,61 @@ router.post('/summarize', async (req, res) => {
         });
 
         const groqData = await groqResponse.json();
-
-        if (!groqResponse.ok) {
-            console.error("❌ Groq API Error:", groqData);
-            return res.status(500).json({ message: "AI summarization failed." });
-        }
+        if (!groqResponse.ok) return res.status(500).json({ message: "AI summarization failed." });
 
         const rawText = groqData.choices[0].message.content.trim();
-
-        // Parse the JSON array from the response
         let points = [];
-        try {
-            points = JSON.parse(rawText);
-        } catch {
-            // Fallback: split by newline if not valid JSON
-            points = rawText.split('\n').filter(p => p.trim().length > 0);
-        }
+        try { points = JSON.parse(rawText); }
+        catch { points = rawText.split('\n').filter(p => p.trim()); }
 
         res.json({ points });
-
     } catch (error) {
         console.error("❌ Summarize Error:", error);
         res.status(500).json({ message: "Server error during summarization." });
+    }
+});
+
+/**
+ * POST /api/chat/polish
+ * Takes a rough typed message and returns a polished clean version.
+ */
+router.post('/polish', async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text || !text.trim())
+            return res.status(400).json({ message: "No text to polish." });
+
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a message polisher for a chat app.
+The user typed a rough or messy message. Rewrite it clearly and naturally.
+Fix grammar, spelling, punctuation and structure.
+Keep the same meaning and tone — casual stays casual, formal stays formal.
+Keep it concise. Do NOT add extra words, explanations or commentary.
+Return ONLY the polished message. No quotes, no labels, nothing else.`
+                    },
+                    { role: 'user', content: text }
+                ],
+                max_tokens: 300,
+                temperature: 0.4
+            })
+        });
+
+        const groqData = await groqResponse.json();
+        if (!groqResponse.ok) return res.status(500).json({ message: "Polish failed." });
+
+        const polished = groqData.choices[0].message.content.trim();
+        res.json({ polished });
+
+    } catch (error) {
+        console.error("❌ Polish Error:", error);
+        res.status(500).json({ message: "Server error during polishing." });
     }
 });
 
