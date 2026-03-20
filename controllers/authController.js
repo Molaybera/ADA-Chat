@@ -11,6 +11,8 @@ const { BrevoClient } = require('@getbrevo/brevo');
 // ✅ Correct initialization
 const brevo = new BrevoClient({ apiKey: process.env.BREVO_API_KEY });
 
+console.log("BREVO_API_KEY:", process.env.BREVO_API_KEY ? "SET" : "NOT SET");
+
 exports.register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
