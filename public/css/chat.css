@@ -720,9 +720,29 @@ body {
         transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
     .chat-area.visible-mobile {
         transform: translateX(0);
+    }
+
+    /* Chat window must shrink to give space to header + input */
+    .chat-window {
+        flex: 1;
+        min-height: 0;  /* critical — prevents flex child from overflowing */
+        padding: 14px 14px 10px;
+        gap: 6px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Input area always sticks to bottom */
+    .input-area {
+        flex-shrink: 0;
+        padding: 8px 10px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        background: rgba(11, 15, 26, 0.98);
+        border-top: 1px solid rgba(255,255,255,0.06);
     }
 
     /* ── Mobile Chat Header ── */
@@ -792,6 +812,7 @@ body {
     /* ── Chat Window ── */
     .chat-window {
         flex: 1;
+        min-height: 0; /* critical — prevents overflow */
         padding: 14px 14px 10px;
         gap: 6px;
         overflow-y: auto;
@@ -815,13 +836,7 @@ body {
     /* Hide enc-indicator on mobile to save space */
     .enc-indicator { display: none !important; }
 
-    /* ── Input Area ── */
-    .input-area {
-        padding: 8px 10px;
-        padding-bottom: max(10px, env(safe-area-inset-bottom));
-        background: rgba(11, 15, 26, 0.98);
-        border-top: 1px solid var(--border);
-    }
+    /* ── Input Area — old rule removed, now in chat-area block above ── */
     .input-wrapper {
         border-radius: 24px;
         padding: 4px 6px 4px 12px;
