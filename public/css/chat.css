@@ -1081,49 +1081,90 @@ body {
     display: block;
     margin-top: 2px;
 }
-/* ── Mobile action bar ────────────────────────────────────────────────────── */
-.mobile-action-bar {
+/* ── Mobile dropdown menu ─────────────────────────────────────────────────── */
+.mobile-action-bar { display: none; } /* old bar — kept for JS compat, hidden */
+
+/* Dropdown container — positioned under the ⋮ button */
+.mob-dropdown {
     display: none;
+    position: absolute;
+    top: 58px;
+    right: 10px;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.97);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    min-width: 180px;
+    animation: dropIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-@media (max-width: 768px) {
-    .mobile-action-bar {
-        display: flex;
-        gap: 8px;
-        padding: 10px 12px 12px;
-        background: rgba(11, 15, 26, 0.98);
-        border-top: 1px solid rgba(255,255,255,0.06);
-        justify-content: space-around;
-    }
-    .mobile-action-bar.hidden { display: none !important; }
+.mob-dropdown.open { display: flex; }
 
-    .mob-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        padding: 10px 8px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
-        cursor: pointer;
-        color: var(--primary);
-        font-size: 10px;
-        font-weight: 600;
-        flex: 1;
-        transition: 0.15s;
-        letter-spacing: 0.3px;
-    }
-    .mob-action-btn i { font-size: 18px; margin-bottom: 1px; }
-    .mob-action-btn:active { background: rgba(0,212,255,0.1); transform: scale(0.95); }
-    .mob-action-btn.danger { color: #f87171; border-color: rgba(239,68,68,0.15); background: rgba(239,68,68,0.04); }
-    .mob-action-btn.danger:active { background: rgba(239,68,68,0.12); }
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-    /* Make the ⋮ menu button in chat header trigger the action bar */
-    #chat-header-menu-btn { display: flex !important; }
+/* Each pill option */
+.mob-drop-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.mob-drop-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--primary);
+}
+.mob-drop-item:active,
+.mob-drop-item:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: rgba(0, 212, 255, 0.2);
+    transform: scale(0.98);
+}
+.mob-drop-item.danger { color: #f87171; }
+.mob-drop-item.danger i { color: #f87171; }
+.mob-drop-item.danger:hover,
+.mob-drop-item.danger:active {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.2);
+}
+
+/* Divider inside dropdown */
+.mob-drop-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 2px 6px;
+    border-radius: 2px;
 }
 
 /* Hidden on desktop */
 #chat-header-menu-btn {
     display: none;
+    color: var(--text-dim);
+    transition: 0.2s;
+}
+#chat-header-menu-btn.active {
     color: var(--primary);
+    background: rgba(0,212,255,0.1);
+}
+
+@media (max-width: 768px) {
+    #chat-header-menu-btn { display: flex !important; }
+    .chat-area { position: relative; } /* needed for absolute dropdown */
 }

@@ -675,22 +675,47 @@ if (summaryModal) {
     };
 }
 
-// ── Mobile action bar ─────────────────────────────────────────────────────
-const mobileActionBar   = document.getElementById('mobile-action-bar');
+// ── Mobile dropdown menu ──────────────────────────────────────────────────
+const mobDropdown       = document.getElementById('mob-dropdown');
 const chatHeaderMenuBtn = document.getElementById('chat-header-menu-btn');
 
+function closeMobDropdown() {
+    mobDropdown?.classList.remove('open');
+    if (chatHeaderMenuBtn) {
+        chatHeaderMenuBtn.classList.remove('active');
+        chatHeaderMenuBtn.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+    }
+}
+
 if (chatHeaderMenuBtn) {
-    chatHeaderMenuBtn.onclick = () => {
-        mobileActionBar?.classList.toggle('hidden');
+    chatHeaderMenuBtn.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = mobDropdown?.classList.contains('open');
+        if (isOpen) {
+            closeMobDropdown();
+        } else {
+            mobDropdown?.classList.add('open');
+            chatHeaderMenuBtn.classList.add('active');
+            chatHeaderMenuBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        }
     };
 }
+
+// Close dropdown when tapping outside
+document.addEventListener('click', (e) => {
+    if (mobDropdown?.classList.contains('open') &&
+        !mobDropdown.contains(e.target) &&
+        e.target !== chatHeaderMenuBtn) {
+        closeMobDropdown();
+    }
+});
 
 const mobBtnSummarize = document.getElementById('mob-btn-summarize');
 const mobBtnVoice     = document.getElementById('mob-btn-voice');
 const mobBtnVideo     = document.getElementById('mob-btn-video');
 const mobBtnLogout    = document.getElementById('mob-btn-logout');
 
-if (mobBtnSummarize) mobBtnSummarize.onclick = () => { mobileActionBar?.classList.add('hidden'); btnSummarize?.click(); };
-if (mobBtnVoice)     mobBtnVoice.onclick     = () => { mobileActionBar?.classList.add('hidden'); initCall('voice'); };
-if (mobBtnVideo)     mobBtnVideo.onclick     = () => { mobileActionBar?.classList.add('hidden'); initCall('video'); };
-if (mobBtnLogout)    mobBtnLogout.onclick    = () => { mobileActionBar?.classList.add('hidden'); confirmLogout(); };
+if (mobBtnSummarize) mobBtnSummarize.onclick = () => { closeMobDropdown(); btnSummarize?.click(); };
+if (mobBtnVoice)     mobBtnVoice.onclick     = () => { closeMobDropdown(); initCall('voice'); };
+if (mobBtnVideo)     mobBtnVideo.onclick     = () => { closeMobDropdown(); initCall('video'); };
+if (mobBtnLogout)    mobBtnLogout.onclick    = () => { closeMobDropdown(); confirmLogout(); };
