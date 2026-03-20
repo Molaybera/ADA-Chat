@@ -1,14 +1,18 @@
 const User = require('../models/User'); 
 const jwt = require('jsonwebtoken');
-const brevo = require('@getbrevo/brevo');
+const SibApiV3Sdk = require('@getbrevo/brevo');
 
 /**
- * AUTH CONTROLLER - Brevo API Edition
- * This uses the HTTPS API to bypass all Render SMTP port blocks.
+ * AUTH CONTROLLER - Production Email Logic via Brevo API
+ * FILEPATH: controllers/authController.js
+ * Fix: Uses correct SDK constructor for the @getbrevo/brevo library.
  */
-const apiInstance = new brevo.TransactionalEmailsApi();
-const apiKey = apiInstance.authentications['apiKey'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+
+// Initialize the Brevo API Instance correctly
+let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Set your API Key using the proper SDK method
+apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 exports.register = async (req, res) => {
     try {
@@ -41,13 +45,14 @@ exports.login = async (req, res) => {
 
         console.log(`[BREVO] Delivering OTP to: ${email}`);
 
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        // Construct the Email
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSmtpEmail.subject = "🔒 Your Verification Code";
         sendSmtpEmail.htmlContent = `
             <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 24px; padding: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
                 <div style="margin-bottom: 20px; font-size: 40px;">🛡️</div>
                 <h2 style="color: #00d4ff; margin-bottom: 10px;">Security Code</h2>
-                <p style="color: #94a3b8; font-size: 14px;">Use the code below to access your account. It expires in 10 minutes.</p>
+                <p style="color: #94a3b8; font-size: 14px;">Use the following code to access your account. It expires in 10 minutes.</p>
                 <div style="background: rgba(255,255,255,0.05); border: 1px dashed #00d4ff; border-radius: 12px; padding: 20px; margin: 25px 0;">
                     <span style="font-size: 42px; font-weight: 800; letter-spacing: 8px; color: #00d4ff;">${otp}</span>
                 </div>
@@ -59,7 +64,7 @@ exports.login = async (req, res) => {
 
         try {
             await apiInstance.sendTransacEmail(sendSmtpEmail);
-            console.log('✅ [BREVO] Email sent to:', email);
+            console.log('✅ [BREVO] Email sent successfully to:', email);
             res.status(200).json({ message: "OTP sent to your email." });
         } catch (apiError) {
             console.error("🚨 [BREVO ERROR]:", apiError.response?.body || apiError);
