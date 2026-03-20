@@ -129,6 +129,8 @@ async function selectContact(user) {
     if (welcomeScreen) welcomeScreen.style.display = 'none';
     if (chatHeader) chatHeader.style.display = 'flex';
     if (chatInputArea) chatInputArea.style.display = 'block';
+    if (chatInputArea) chatInputArea.removeAttribute('style'); // let CSS control it, then re-show
+    if (chatInputArea) chatInputArea.style.display = 'block';
     if (activeChatUser) activeChatUser.innerText = user.userName;
     if (activeAvatar) activeAvatar.innerText = user.userName.charAt(0).toUpperCase();
 
