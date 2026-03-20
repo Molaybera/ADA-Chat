@@ -2,30 +2,33 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// 1. RESILIENT TRANSPORTER CONFIG FOR PRODUCTION (Using Port 587 for better compatibility)
+// 1. HIGH-COMPATIBILITY TRANSPORTER CONFIG
+// Using pooling and extra-long timeouts to survive cloud network filters
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    pool: true, // Use a pool of connections instead of creating new ones for every mail
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // Port 587 uses STARTTLS (secure: false), not SSL (secure: true)
+    secure: false, 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    // Adding a timeout and retries to handle cloud latency
-    connectionTimeout: 15000, 
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
+    // Increased timeouts to 30 seconds for slow cloud handshakes
+    connectionTimeout: 30000, 
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
     tls: {
-        // This ensures the connection doesn't fail due to self-signed certificate issues in some environments
-        rejectUnauthorized: false
+        // Essential for cloud providers to prevent SSL handshake drops
+        rejectUnauthorized: false,
+        minVersion: "TLSv1.2"
     }
 });
 
-// Verify connection configuration on startup
-transporter.verify(function (error, success) {
+// Startup check - this will show in your Render logs immediately
+transporter.verify((error) => {
     if (error) {
         console.error("❌ Nodemailer Setup Error:", error.message);
+        console.log("💡 Tip: If you see 'ETIMEDOUT', Render is blocking Gmail's ports. We may need to use an API-based service like SendGrid or Resend.");
     } else {
         console.log("✅ Email Server is ready to send OTPs");
     }
@@ -49,7 +52,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(`Attempting login for: ${email}`); 
+        console.log(`[AUTH] Login attempt for: ${email}`); 
 
         const user = await User.findOne({ email });
 
@@ -67,37 +70,28 @@ exports.login = async (req, res) => {
             to: email,
             subject: '🔒 Your Verification Code',
             html: `
-                <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                    <div style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #00d4ff, #7c3aed);">
-                        <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
-                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Security Verification</h1>
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 20px; overflow: hidden;">
+                    <div style="padding: 30px; text-align: center; background: #7c3aed; color: white;">
+                        <h2>Security Code</h2>
                     </div>
-                    <div style="padding: 40px 30px;">
-                        <p style="font-size: 16px; line-height: 1.6; color: #94a3b8; margin-bottom: 30px;">
-                            Hello,<br><br>
-                            To complete your sign-in to <strong>ADA Chat</strong>, please use the following one-time verification code. This code is valid for <strong>10 minutes</strong>.
-                        </p>
-                        <div style="background: rgba(255,255,255,0.05); border: 1px dashed #00d4ff; border-radius: 16px; padding: 25px; text-align: center; margin-bottom: 30px;">
-                            <span style="font-family: monospace; font-size: 42px; font-weight: 800; color: #00d4ff; letter-spacing: 8px;">${otp}</span>
-                        </div>
+                    <div style="padding: 30px; text-align: center;">
+                        <p>Use the code below to log in:</p>
+                        <h1 style="font-size: 40px; letter-spacing: 5px; color: #00d4ff;">${otp}</h1>
+                        <p style="font-size: 12px; color: #94a3b8;">This code expires in 10 minutes.</p>
                     </div>
                 </div>
             `
         };
 
-        console.log("Sending email via Port 587...");
+        console.log("[MAIL] Attempting to send via Port 587...");
         await transporter.sendMail(mailOptions);
-        console.log("✅ OTP Email sent successfully to:", email);
+        console.log("✅ [MAIL] OTP sent successfully");
         
         res.status(200).json({ message: "OTP sent to your email." });
 
     } catch (error) {
-        console.error("🚨 LOGIN/OTP FATAL ERROR:", {
-            message: error.message,
-            code: error.code,
-            command: error.command
-        });
-        res.status(500).json({ message: "Failed to process login. Please check server logs." });
+        console.error("🚨 [MAIL ERROR]:", error.message);
+        res.status(500).json({ message: "Email delivery failed. The hosting provider may be blocking the connection." });
     }
 };
 
@@ -106,7 +100,10 @@ exports.verifyOTP = async (req, res) => {
         const { email, otp } = req.body;
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User not found" });
-        if (user.otp !== otp || user.otpExpires < Date.now()) return res.status(400).json({ message: "Invalid OTP" });
+        
+        if (user.otp !== otp || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
         
         user.otp = null;
         user.otpExpires = null;
