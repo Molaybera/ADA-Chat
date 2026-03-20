@@ -51,6 +51,7 @@ function showToast(message, type = 'error') {
 verifyBtn.onclick = async (e) => {
     e.preventDefault();
     
+    // pendingEmail stays in sessionStorage (temporary, only needed during login flow)
     const email = sessionStorage.getItem('pendingEmail');
     const otp = otpInput.value;
 
@@ -92,11 +93,12 @@ verifyBtn.onclick = async (e) => {
                 return;
             }
 
-            // SECURE SESSION: Using sessionStorage for privacy
-            sessionStorage.setItem('token', token);
-            sessionStorage.setItem('userName', name);
-            sessionStorage.setItem('userId', id); 
+            // ✅ PERSISTENT SESSION: localStorage survives browser close (24 days via JWT)
+            localStorage.setItem('token', token);
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userId', id);
             
+            // pendingEmail was only needed for OTP, clear it
             sessionStorage.removeItem('pendingEmail');
             showToast("Verification successful!", "success");
             

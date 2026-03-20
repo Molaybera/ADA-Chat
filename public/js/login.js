@@ -1,4 +1,10 @@
 // public/js/login.js
+
+// ✅ If already logged in, skip login and go straight to chat
+if (localStorage.getItem('token')) {
+    window.location.href = 'chat.html';
+}
+
 const loginBtn = document.getElementById('btn-login');
 const btnText = document.getElementById('btn-text');
 const btnLoader = document.getElementById('btn-loader');

@@ -5,9 +5,9 @@
  */
 const socket = io();
 
-const token = sessionStorage.getItem('token');
-const userName = sessionStorage.getItem('userName');
-const userId = sessionStorage.getItem('userId');
+const token = localStorage.getItem('token');
+const userName = localStorage.getItem('userName');
+const userId = localStorage.getItem('userId');
 
 let activeRecipientId = null;
 let onlineUsers = [];
@@ -545,7 +545,7 @@ if (menuTrigger) {
 
 function confirmLogout() {
     if (confirm("End secure session and wipe local data?")) {
-        sessionStorage.clear();
+        localStorage.clear();
         window.location.href = 'login.html';
     }
 }

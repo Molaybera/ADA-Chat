@@ -85,7 +85,7 @@ exports.verifyOTP = async (req, res) => {
         user.otpExpires = null;
         await user.save();
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '24d' });
         res.status(200).json({ token, user: { id: user._id, name: user.name } });
     } catch (error) {
         res.status(500).json({ message: "Verification failed." });
