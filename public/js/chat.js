@@ -1,5 +1,6 @@
 /**
  * Secure Chat & WebRTC Calling Logic
+ * Optimized for Production: Handshake buffering, Avatar management, and UI toggles.
  * FILEPATH: public/js/chat.js
  */
 
@@ -23,9 +24,14 @@ let callStartFormatted = null;
 let isVideoCall = false;
 let cameraEnabled = true;
 let activeCallType = 'voice';
-const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const iceServers = { 
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ] 
+};
 
-// ICE Candidate Buffer
+// ICE Candidate Buffer (Prevents race conditions during handshake)
 let pendingIceCandidates = [];
 
 // UI SELECTORS
@@ -43,7 +49,7 @@ const userDisplay = document.getElementById('user-display');
 
 // Call UI
 const callOverlay = document.getElementById('call-overlay');
-const callAvatar = document.getElementById('call-avatar');        // FIX: added selector
+const callAvatar = document.getElementById('call-avatar');
 const callStatusText = document.getElementById('call-status-text');
 const callerNameDisplay = document.getElementById('caller-name');
 const videoGrid = document.getElementById('video-grid');
@@ -54,7 +60,7 @@ const btnHangup = document.getElementById('btn-hangup');
 const btnToggleMic = document.getElementById('btn-toggle-mic');
 const btnToggleCamera = document.getElementById('btn-toggle-camera');
 
-// Avatar overlays
+// Avatar overlays (for when camera is off)
 const localAvatarOverlay = document.getElementById('local-avatar-overlay');
 const localAvInitial = document.getElementById('local-av-initial');
 const remoteAvatarOverlay = document.getElementById('remote-avatar-overlay');
@@ -294,7 +300,6 @@ async function initCall(type) {
     const targetUser = onlineUsers.find(u => u.userId === activeRecipientId);
     const targetName = targetUser?.userName || 'User';
 
-    // FIX: pass the name so showCallOverlay can set the avatar initial
     showCallOverlay('Dialing...', targetName);
 
     try {
@@ -339,7 +344,6 @@ socket.on('incoming-call', async (data) => {
     activeRecipientId = data.from;
     activeCallType = data.type;
 
-    // FIX: pass fromName so the callee also sees the caller's initial
     showCallOverlay(`Incoming ${data.type} call...`, data.fromName);
     btnAccept.classList.remove('hidden');
 
@@ -460,7 +464,6 @@ function terminateCall(sendSignal = true) {
     callStartTime = null;
     callStartFormatted = null;
 
-    // Reset avatar back to "?" for next call
     if (callAvatar) callAvatar.innerText = '?';
 
     if (btnToggleCamera) {
@@ -486,21 +489,16 @@ function terminateCall(sendSignal = true) {
 }
 
 function recordCallInChat(content) {
+    if (!activeRecipientId) return;
     const msg = { type: 'call', content, senderId: userId, receiverId: activeRecipientId, timestamp: new Date().toISOString() };
     socket.emit('privateMessage', msg);
     renderMessage(msg, true);
 }
 
-/**
- * FIX: showCallOverlay now sets #call-avatar to the remote user's initial.
- * Both caller and callee pass the remote name, so both sides see
- * the correct letter instead of "?".
- */
 function showCallOverlay(status, name) {
     callOverlay.classList.remove('hidden');
     callStatusText.innerText = status;
     callerNameDisplay.innerText = name;
-    // Set the big avatar circle to the first letter of the remote user's name
     if (callAvatar) callAvatar.innerText = (name || '?').charAt(0).toUpperCase();
 }
 
@@ -519,7 +517,6 @@ function renderMessage(msg, isSelf) {
     if (msg.type === 'call') {
         const log = document.createElement('div');
         log.className = 'msg-row call-log';
-
         const parts = msg.content.split('|');
         const label = parts[0];
         const isCancelled = parts[1] === 'cancelled';
@@ -547,7 +544,6 @@ function renderMessage(msg, isSelf) {
                     </div>
                 </div>`;
         }
-
         log.innerHTML = bubbleHtml;
         chatWindow.appendChild(log);
         scrollToBottom();
@@ -557,11 +553,10 @@ function renderMessage(msg, isSelf) {
     const row = document.createElement('div');
     row.className = `msg-row ${isSelf ? 'self' : 'other'}`;
     const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
     let contentHtml = '';
-    if (msg.type === 'text')       contentHtml = `<p>${msg.content}</p>`;
+    if (msg.type === 'text') contentHtml = `<p>${msg.content}</p>`;
     else if (msg.type === 'image') contentHtml = `<img src="${msg.content}" style="max-width:250px;border-radius:12px;">`;
-    else if (msg.type === 'file')  contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
+    else if (msg.type === 'file') contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
 
     row.innerHTML = `<div class="bubble">${contentHtml}<div class="bubble-meta">${time}</div></div>`;
     chatWindow.appendChild(row);
@@ -581,33 +576,22 @@ btnToggleMic.onclick = () => {
     track.enabled = !track.enabled;
     btnToggleMic.style.opacity = track.enabled ? '1' : '0.4';
     btnToggleMic.title = track.enabled ? 'Mute Mic' : 'Unmute Mic';
-    btnToggleMic.innerHTML = track.enabled
-        ? '<i class="fa-solid fa-microphone"></i>'
-        : '<i class="fa-solid fa-microphone-slash"></i>';
+    btnToggleMic.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>';
 };
 
 btnToggleCamera.onclick = () => {
     if (!localStream || !isVideoCall) return;
     const track = localStream.getVideoTracks()[0];
     if (!track) return;
-
     cameraEnabled = !cameraEnabled;
     track.enabled = cameraEnabled;
-
-    if (cameraEnabled) {
-        btnToggleCamera.style.opacity = '1';
-        btnToggleCamera.title = 'Turn Camera Off';
-        btnToggleCamera.innerHTML = '<i class="fa-solid fa-video"></i>';
-        setLocalAvatar(false);
-    } else {
-        btnToggleCamera.style.opacity = '0.4';
-        btnToggleCamera.title = 'Turn Camera On';
-        btnToggleCamera.innerHTML = '<i class="fa-solid fa-video-slash"></i>';
-        setLocalAvatar(true);
-    }
+    btnToggleCamera.style.opacity = cameraEnabled ? '1' : '0.4';
+    btnToggleCamera.title = cameraEnabled ? 'Turn Camera Off' : 'Turn Camera On';
+    btnToggleCamera.innerHTML = cameraEnabled ? '<i class="fa-solid fa-video"></i>' : '<i class="fa-solid fa-video-slash"></i>';
+    setLocalAvatar(!cameraEnabled);
 };
 
-// ── SIDEBAR / LOGOUT ─────────────────────────────────────────────────────────
+// ── LOGOUT / DROPDOWN ────────────────────────────────────────────────────────
 
 if (menuTrigger) {
     menuTrigger.onclick = (e) => {
@@ -633,6 +617,5 @@ function confirmLogout() {
         window.location.href = 'login.html';
     }
 }
-
 const headerLogoutBtn = document.getElementById('btn-logout');
 if (headerLogoutBtn) headerLogoutBtn.onclick = confirmLogout;

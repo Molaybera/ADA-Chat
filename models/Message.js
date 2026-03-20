@@ -13,7 +13,6 @@ const messageSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
 });
 
-// Optimization for searching conversations
 messageSchema.index({ senderId: 1, receiverId: 1, timestamp: 1 });
 
 module.exports = mongoose.model('Message', messageSchema);
