@@ -43,6 +43,7 @@ chatHandler(io);
 mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('✅ Connected to MongoDB Atlas');
+        console.log('🕐 Message auto-delete active — messages expire after 24 hours');
     })
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
