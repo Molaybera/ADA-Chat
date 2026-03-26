@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────
+#  ADA-Chat — docker-compose.yml
+#  Usage:
+#    docker compose up --build        (first run)
+#    docker compose up -d             (background)
+#    docker compose down              (stop)
+# ─────────────────────────────────────────────
+
+services:
+
+  ada-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ada-chat-app
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"          # host:container  →  visit http://localhost:3000
+
+    # ── Environment Variables ──────────────────
+    # Option A: use a .env file (recommended — never commit secrets)
+    env_file:
+      - .env
+
+    # Option B: hard-code for quick testing (comment out env_file above)
+    # environment:
+    #   - PORT=3000
+    #   - MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/adachat
+    #   - JWT_SECRET=your_jwt_secret_here
+    #   - BREVO_API_KEY=your_brevo_api_key
+    #   - EMAIL_USER=your_sender@email.com
+    #   - GROQ_API_KEY=your_groq_api_key
+
+    # ── Resource limits (optional, prevents runaway usage) ────
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.75"
+
+    # ── Healthcheck (mirrors Dockerfile HEALTHCHECK) ──────────
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

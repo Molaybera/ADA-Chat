@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────
+#  .dockerignore — keeps Docker image clean & fast
+# ─────────────────────────────────────────────
+
+# Dependencies (re-installed inside the container)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files (secrets must never be baked into images)
+.env
+.env.*
+!.env.example
+
+# Version control
+.git
+.gitignore
+
+# Editor / OS clutter
+.DS_Store
+.vscode
+*.swp
+*.swo
+Thumbs.db
+
+# Docker files themselves (no need to copy into the image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs & runtime artifacts
+logs
+*.log
+
+# README (optional — include if you want docs inside the image)
+README.md
