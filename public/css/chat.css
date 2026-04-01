@@ -1102,10 +1102,6 @@ body {
     background: rgba(0,212,255,0.1);
 }
 
-@media (max-width: 768px) {
-    #chat-header-menu-btn { display: flex !important; }
-    .chat-area { position: relative; } /* needed for absolute dropdown */
-}
 
 /* ── AI Translate Dropdown ────────────────────────────────────────────────── */
 .lang-selector {
@@ -1172,4 +1168,61 @@ body {
     0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
     70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+@media (max-width: 768px) {
+    #chat-header-menu-btn { display: flex !important; }
+    .chat-area { position: relative; } /* needed for absolute dropdown */
+    /* ── Mobile Input Area Fix (Two-Row Layout) ── */
+    .input-wrapper {
+        flex-wrap: wrap; /* Allows the tools to wrap to a new line */
+        border-radius: 18px; /* Slightly boxier to fit two rows */
+        padding: 8px 10px;
+        gap: 6px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.09);
+        align-items: center;
+    }
+
+    /* 1. Force the text input to take the entire top row */
+    .input-wrapper input#msg-input {
+        flex: 1 1 100%;
+        width: 100%;
+        order: 1; /* Force it to the top */
+        margin-bottom: 4px; /* Space between input and tools */
+        padding: 10px 14px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        font-size: 15px;
+    }
+
+    /* 2. Assign all tools to the second row */
+    .input-wrapper > div, 
+    .input-wrapper > select {
+        order: 2;
+    }
+
+    /* 3. Push the '+' attachment icon to the far left, sending the rest right */
+    .input-wrapper .icon-btn:first-of-type {
+        margin-right: auto; 
+    }
+
+    /* 4. Resize buttons so they all fit perfectly on small screens */
+    .input-wrapper .icon-btn {
+        width: 36px; 
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    .lang-selector {
+        height: 36px;
+        padding: 0 6px;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+
+    .send-btn {
+        width: 40px !important; 
+        height: 40px !important;
+        border-radius: 50% !important;
+    }
 }
