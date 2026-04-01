@@ -126,4 +126,56 @@ Return ONLY the polished message. No quotes, no labels, nothing else.`
     }
 });
 
+
+/**
+ * POST /api/chat/translate
+ * Translates a given text into the specified target language using Groq.
+ */
+router.post('/translate', async (req, res) => {
+    try {
+        const { text, targetLanguage } = req.body;
+        
+        if (!text || !text.trim() || !targetLanguage) {
+            return res.status(400).json({ message: "Text and target language are required." });
+        }
+
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${process.env.GROQ_API_KEY}` 
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant', // Using the fast, free tier model
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a professional, highly accurate translation engine for a secure messaging app. 
+Translate the user's message into ${targetLanguage}. 
+Maintain the original tone, urgency, and formatting. 
+Return ONLY the translated text. Do NOT wrap it in quotes, and do NOT add any conversational filler or explanations.`
+                    },
+                    { role: 'user', content: text }
+                ],
+                max_tokens: 500,
+                temperature: 0.3 // Low temperature for more deterministic/accurate translation
+            })
+        });
+
+        const groqData = await groqResponse.json();
+        
+        if (!groqResponse.ok) {
+            console.error("Groq API Error:", groqData);
+            return res.status(500).json({ message: "Translation API failed." });
+        }
+
+        const translated = groqData.choices[0].message.content.trim();
+        res.json({ translated });
+
+    } catch (error) {
+        console.error("❌ Translate Error:", error);
+        res.status(500).json({ message: "Server error during translation." });
+    }
+});
+
 module.exports = router;

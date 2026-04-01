@@ -206,6 +206,8 @@ if (fileInput) {
 
 // ── AI Message Polisher ────────────────────────────────────────────────────
 const btnPolish = document.getElementById('btn-polish');
+const btnTranslate = document.getElementById('btn-translate');
+const langSelector = document.getElementById('lang-selector');
 
 if (btnPolish) {
     btnPolish.onclick = async () => {
@@ -243,6 +245,52 @@ if (btnPolish) {
         } finally {
             btnPolish.style.pointerEvents = '';
             btnPolish.innerHTML = '<i class="fa-solid fa-wand-sparkles"></i>';
+            msgInput.disabled = false;
+            msgInput.focus();
+        }
+    };
+}
+
+if (btnTranslate) {
+    btnTranslate.onclick = async () => {
+        const text = msgInput.value.trim();
+        const targetLanguage = langSelector.value;
+
+        if (!text) {
+            msgInput.placeholder = 'Type something to translate!';
+            setTimeout(() => msgInput.placeholder = 'Type a secure message...', 2000);
+            return;
+        }
+
+        // Show loading state
+        btnTranslate.style.pointerEvents = 'none';
+        btnTranslate.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        msgInput.disabled = true;
+
+        try {
+            // We will build this backend route next
+            const res = await fetch('/api/chat/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, targetLanguage })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.translated) {
+                msgInput.value = data.translated;
+                // Flash primary color to show it worked
+                msgInput.style.borderColor = 'var(--primary)';
+                setTimeout(() => msgInput.style.borderColor = 'transparent', 1500);
+            } else {
+                msgInput.placeholder = 'Translation failed. Try again.';
+                setTimeout(() => msgInput.placeholder = 'Type a secure message...', 2000);
+            }
+        } catch (err) {
+            console.error('Translate error:', err);
+        } finally {
+            // Restore button state
+            btnTranslate.style.pointerEvents = '';
+            btnTranslate.innerHTML = '<i class="fa-solid fa-language"></i>';
             msgInput.disabled = false;
             msgInput.focus();
         }

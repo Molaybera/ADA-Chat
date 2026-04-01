@@ -1106,3 +1106,31 @@ body {
     #chat-header-menu-btn { display: flex !important; }
     .chat-area { position: relative; } /* needed for absolute dropdown */
 }
+
+/* ── AI Translate Dropdown ────────────────────────────────────────────────── */
+.lang-selector {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 6px 4px 6px 8px;
+    outline: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.lang-selector:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--primary);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.lang-selector option {
+    background: var(--bg-dark);
+    color: white;
+}
