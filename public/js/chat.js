@@ -100,6 +100,33 @@ socket.on('updateUserList', (users) => {
     renderUserList();
 });
 
+// ── Tactical Keyword Detection ─────────────────────────────────────────────
+const tacticalKeywords = {
+    // Critical Threat: Pulsing Red
+    critical: ['attack', 'danger', 'hostage', 'casualty', 'shooter', 'lockdown', 'officer down'],
+    // Warning/Urgent: Amber
+    warning: ['damage', 'suspect', 'weapon', 'fleeing', 'backup', 'dispatch', 'armed'],
+    // Info/Secure: Blue
+    info: ['secure', 'clear', 'apprehended', 'civilian', 'extraction', 'perimeter']
+};
+
+function highlightTacticalKeywords(text) {
+    if (!text) return text;
+    let processedText = text;
+
+    // Loop through each category and its words
+    for (const [level, words] of Object.entries(tacticalKeywords)) {
+        // Create a regex to find whole words only (case-insensitive)
+        // \b ensures we don't highlight "damage" inside "undamaged"
+        const regex = new RegExp(`\\b(${words.join('|')})\\b`, 'gi');
+        
+        // Replace the matched word with a span wrapping it in the CSS class
+        processedText = processedText.replace(regex, `<span class="kw-${level}">$&</span>`);
+    }
+    
+    return processedText;
+}
+
 function renderUserList() {
     if (!userListContent) return;
     userListContent.innerHTML = '';
@@ -689,7 +716,10 @@ function renderMessage(msg, isSelf) {
     row.className = `msg-row ${isSelf ? 'self' : 'other'}`;
     const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let contentHtml = '';
-    if (msg.type === 'text')  contentHtml = `<p>${msg.content}</p>`;
+    if (msg.type === 'text') {
+        const highlightedText = highlightTacticalKeywords(msg.content);
+        contentHtml = `<p>${highlightedText}</p>`;
+    }
     else if (msg.type === 'image') contentHtml = `<img src="${msg.content}" style="max-width:250px;border-radius:12px;">`;
     else if (msg.type === 'file')  contentHtml = `<div style="padding:10px;background:rgba(0,0,0,0.1);border-radius:8px;">📁 ${msg.fileName}</div>`;
     const encBadge = isSelf ? `<span class="enc-indicator"><i class="fa-solid fa-lock"></i>encrypted</span>` : '';
