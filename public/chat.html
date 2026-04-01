@@ -147,16 +147,26 @@
                 </div>
             </div>
 
-            <footer class="input-area" id="chat-input-area" style="display: none; position: relative;">
-                <div class="input-wrapper">
-                    <div class="icon-btn">
-                        <label for="file-input" style="cursor: pointer;">
-                            <i class="fa-solid fa-plus"></i>
-                        </label>
-                    </div>
-                    <input type="file" id="file-input" accept="image/*, .pdf, .docx, .txt" hidden>
-                    <input type="text" id="msg-input" placeholder="Type a secure message...">
+<footer class="input-area" id="chat-input-area" style="display: none; position: relative;">
+    
+    <div id="recording-indicator" class="recording-indicator hidden" style="position: absolute; top: -50px; left: 30px; right: 30px; justify-content: center; z-index: 10;">
+        <div class="rec-dot"></div>
+        <span style="font-size: 13px; font-weight: 600; color: #ef4444;">Listening... Speak now</span>
+    </div>
 
+    <div class="input-wrapper">
+        <div class="icon-btn">
+            <label for="file-input" style="cursor: pointer;">
+                <i class="fa-solid fa-plus"></i>
+            </label>
+        </div>
+        <input type="file" id="file-input" accept="image/*, .pdf, .docx, .txt" hidden>
+        
+        <input type="text" id="msg-input" placeholder="Type a secure message...">
+        
+        <div class="icon-btn" id="btn-voice-record" title="Click to Speak" style="color: var(--text-dim);">
+            <i class="fa-solid fa-microphone"></i>
+        </div>
                     <select id="lang-selector" class="lang-selector" title="Select Target Language">
                         <option value="Hindi">Hindi</option>
                         <option value="Russian">Russian</option>
@@ -166,20 +176,20 @@
                         <option value="German">German</option>
                         <option value="Arabic">Arabic</option>
                     </select>
+        
+        <div class="icon-btn" id="btn-translate" title="AI Translate" style="color: var(--text-dim);">
+            <i class="fa-solid fa-language"></i>
+        </div>
 
-                    <div class="icon-btn" id="btn-translate" title="AI Translate" style="color: var(--text-dim);">
-                        <i class="fa-solid fa-language"></i>
-                    </div>
-                
-                    <div class="icon-btn" id="btn-polish" title="AI Polish Message" style="color: var(--text-dim);">
-                        <i class="fa-solid fa-wand-sparkles"></i>
-                    </div>
-                    <div class="icon-btn send-btn" id="btn-send">
-                        <span id="send-icon"><i class="fa-solid fa-paper-plane"></i></span>
-                        <span id="send-loader" class="hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
-                    </div>
-                </div>
-            </footer>
+        <div class="icon-btn" id="btn-polish" title="AI Polish Message" style="color: var(--text-dim);">
+            <i class="fa-solid fa-wand-sparkles"></i>
+        </div>
+        <div class="icon-btn send-btn" id="btn-send">
+            <span id="send-icon"><i class="fa-solid fa-paper-plane"></i></span>
+            <span id="send-loader" class="hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+        </div>
+    </div>
+</footer>
         </section>
     </div>
 

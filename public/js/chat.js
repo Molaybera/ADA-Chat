@@ -297,6 +297,89 @@ if (btnTranslate) {
     };
 }
 
+
+// ── Voice to Text (Native Browser Speech Recognition) ──────────────────────
+const btnVoiceRecord = document.getElementById('btn-voice-record');
+const recordingIndicator = document.getElementById('recording-indicator');
+
+// Cross-browser compatibility
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition && btnVoiceRecord) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false; // Stop listening automatically when the user pauses
+    recognition.interimResults = true; // Capture text while they are still speaking
+
+    let isRecording = false;
+
+    // Toggle recording when the mic button is clicked
+    btnVoiceRecord.onclick = () => {
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            // Optional: You could set recognition.lang based on the lang-selector here!
+            // recognition.lang = 'en-US'; 
+            recognition.start();
+        }
+    };
+
+    // UI Updates when listening starts
+    recognition.onstart = () => {
+        isRecording = true;
+        btnVoiceRecord.classList.add('recording');
+        recordingIndicator.classList.remove('hidden');
+        msgInput.placeholder = 'Listening...';
+    };
+
+    // Handle the transcribed text
+    recognition.onresult = (event) => {
+        let finalTranscript = '';
+        
+        // Loop through results
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            }
+        }
+
+        // Append the recognized text to the input field
+        if (finalTranscript) {
+            const currentText = msgInput.value.trim();
+            // Add a space if there's already text in the input
+            msgInput.value = currentText ? currentText + ' ' + finalTranscript : finalTranscript;
+        }
+    };
+
+    // Handle errors (like permission denied)
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        
+        if (event.error === 'not-allowed') {
+            alert('Please allow microphone access to use Voice-to-Text.');
+        }
+        
+        resetVoiceUI();
+    };
+
+    // Reset UI when it stops listening
+    recognition.onend = () => {
+        resetVoiceUI();
+    };
+
+    function resetVoiceUI() {
+        isRecording = false;
+        btnVoiceRecord.classList.remove('recording');
+        recordingIndicator.classList.add('hidden');
+        msgInput.placeholder = 'Type a secure message...';
+    }
+} else if (btnVoiceRecord) {
+    // Fallback if the user is on an unsupported browser (like older Firefox)
+    btnVoiceRecord.onclick = () => {
+        alert("Voice-to-text is not supported in this browser. Please use Chrome, Edge, or Safari.");
+    };
+}
+
+
 // ── WebRTC helpers ─────────────────────────────────────────────────────────
 function attachStream(videoEl, stream) {
     videoEl.srcObject = stream;
