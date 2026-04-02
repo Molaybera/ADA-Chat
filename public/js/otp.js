@@ -118,3 +118,46 @@ verifyBtn.onclick = async (e) => {
         btnLoader.classList.add('hidden');
     }
 };
+
+
+
+// Initialize Timer Configuration
+const TOTAL_TIME = 60; // 60 seconds
+let timeRemaining = TOTAL_TIME;
+const timerDisplay = document.getElementById('timer-count');
+const timerContainer = document.querySelector('.timer-container');
+const btnVerify = document.getElementById('btn-verify');
+
+function updateTimer() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+
+    // Format display as MM:SS
+    timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    // Apply "Low Time" visual alerts (at 10 seconds)
+    if (timeRemaining <= 10) {
+        timerContainer.classList.add('timer-low');
+    }
+
+    if (timeRemaining <= 0) {
+        clearInterval(countdownInterval);
+        handleTimerExpire();
+    } else {
+        timeRemaining--;
+    }
+}
+
+function handleTimerExpire() {
+    timerDisplay.textContent = "00:00";
+    // Optional: Disable button or show error
+    btnVerify.disabled = true;
+    document.querySelector('.terminal-msg').textContent = "> CRITICAL: ACCESS TOKEN EXPIRED. REINITIATE PROTOCOL.";
+    document.querySelector('.terminal-msg').style.color = "var(--neon-red)";
+}
+
+// Start the countdown
+const countdownInterval = setInterval(updateTimer, 1000);
+
+// Run initial update immediately
+updateTimer();

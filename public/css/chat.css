@@ -1,19 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;700&display=swap');
+
 :root {
-    --primary: #00d4ff;
-    --primary-glow: rgba(0, 212, 255, 0.3);
-    --accent: #7c3aed;
-    --bg-dark: #0f172a;
-    --sidebar-bg: #111827;
-    --chat-bg: #0b0f1a;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-dim: #94a3b8;
-    --text-muted: #64748b;
-    --border: rgba(255, 255, 255, 0.05);
-    --online: #10b981;
-    --call-success: #10b981;
-    --call-danger: #ef4444;
-    --call-bg: rgba(15, 23, 42, 0.98);
+    --neon-green: #00ff41;
+    --neon-green-dim: rgba(0, 255, 65, 0.2);
+    --neon-green-glow: rgba(0, 255, 65, 0.3);
+    --bg-obsidian: #050505;
+    --terminal-black: #0a0c0e;
+    --sidebar-bg: #0a0a0a;
+    --chat-bg: #050505;
+    --glass-bg: rgba(10, 12, 14, 0.9);
+    --text-primary: #e0e0e0;
+    --text-dim: #666;
+    --text-muted: #444;
+    --border: #1a1a1a;
+    --online: #00ff41;
+    --call-success: #00ff41;
+    --call-danger: #ff0040;
+    --call-bg: rgba(5, 5, 5, 0.98);
+    --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -24,43 +28,90 @@
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+    background-color: var(--bg-obsidian);
+    color: var(--text-primary);
     height: 100vh;
     display: flex;
     overflow: hidden;
+    position: relative;
 }
 
-/* ── Background glows ─────────────────────────────────────────────────────── */
+/* ── Tactical Background Elements ─────────────────────────────────────────── */
 .bg-glow {
     position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    filter: blur(100px);
     z-index: -1;
-    opacity: 0.15;
 }
-.glow-1 { background: var(--primary); top: -200px; left: -200px; }
-.glow-2 { background: var(--accent); bottom: -200px; right: -200px; }
+
+.glow-1 {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(var(--neon-green-dim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--neon-green-dim) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.08;
+}
+
+.glow-2 {
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(0deg, rgba(0, 255, 65, 0) 0%, rgba(0, 255, 65, 0.05) 50%, rgba(0, 255, 65, 0) 100%);
+    position: absolute;
+    top: -100px;
+    animation: scan 10s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scan {
+    0% { top: -100px; }
+    100% { top: 110%; }
+}
 
 /* ── Main layout ──────────────────────────────────────────────────────────── */
 .app-container {
     display: flex;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(5, 5, 5, 0.6);
     backdrop-filter: blur(20px);
 }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 .sidebar {
     width: 380px;
-    background: var(--sidebar-bg);
+    background: var(--terminal-black);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     z-index: 10;
+    position: relative;
+}
+
+/* Decorative corner brackets for sidebar */
+.sidebar::before,
+.sidebar::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--neon-green);
+    z-index: 1;
+}
+
+.sidebar::before {
+    top: 8px;
+    left: 8px;
+    border-right: 0;
+    border-bottom: 0;
+}
+
+.sidebar::after {
+    bottom: 8px;
+    left: 8px;
+    border-right: 0;
+    border-top: 0;
 }
 
 .sidebar-header {
@@ -68,6 +119,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--border);
 }
 
 .profile-section {
@@ -79,40 +131,60 @@ body {
 .my-avatar {
     width: 42px;
     height: 42px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    background: linear-gradient(135deg, var(--neon-green), #00cc33);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #000;
     font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 0 20px var(--neon-green-dim);
+    font-weight: 700;
 }
 
 .search-container { padding: 0 20px 20px; }
 
 .search-bar {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: #000;
+    border: 1px solid #222;
+    border-radius: 0;
     display: flex;
     align-items: center;
     padding: 10px 16px;
     gap: 12px;
+    transition: all 0.3s;
 }
-.search-bar i { color: var(--text-muted); }
+.search-bar:focus-within {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green-dim);
+}
+.search-bar i { color: var(--text-dim); }
 .search-bar input {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--neon-green);
     width: 100%;
     font-size: 14px;
     outline: none;
+    font-family: var(--font-mono);
+}
+.search-bar input::placeholder {
+    color: var(--text-dim);
 }
 
 .contacts-list {
     flex: 1;
     overflow-y: auto;
+}
+
+.contacts-list-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--neon-green);
+    letter-spacing: 1.5px;
+    padding: 16px 20px 8px;
+    text-transform: uppercase;
 }
 
 .contact-item {
@@ -123,25 +195,30 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     border-bottom: 1px solid rgba(255,255,255,0.02);
+    position: relative;
 }
-.contact-item:hover { background: rgba(255,255,255,0.03); }
+.contact-item:hover { 
+    background: rgba(0, 255, 65, 0.05);
+}
 .contact-item.active {
-    background: linear-gradient(to right, rgba(0, 212, 255, 0.1), transparent);
-    border-left: 4px solid var(--primary);
+    background: linear-gradient(to right, rgba(0, 255, 65, 0.1), transparent);
+    border-left: 3px solid var(--neon-green);
 }
 
 .contact-avatar {
     width: 52px;
     height: 52px;
-    background: #1e293b;
-    border-radius: 16px;
+    background: #0a0a0a;
+    border: 1px solid #222;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary);
+    color: var(--neon-green);
     font-weight: 700;
     font-size: 20px;
     position: relative;
+    font-family: var(--font-mono);
 }
 
 .online-dot {
@@ -150,9 +227,15 @@ body {
     right: -2px;
     width: 14px;
     height: 14px;
-    background: var(--online);
-    border: 3px solid var(--sidebar-bg);
+    background: var(--neon-green);
+    border: 3px solid var(--terminal-black);
     border-radius: 50%;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 1; }
+    100% { transform: scale(1.3); opacity: 0; }
 }
 
 .contact-info {
@@ -165,10 +248,19 @@ body {
     align-items: center;
     margin-bottom: 4px;
 }
-.contact-name { font-weight: 600; font-size: 15px; color: var(--text-main); }
-.contact-time { font-size: 11px; color: var(--text-muted); }
+.contact-name { 
+    font-weight: 600; 
+    font-size: 15px; 
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+.contact-time { 
+    font-size: 10px; 
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+}
 .contact-preview {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-dim);
     white-space: nowrap;
     overflow: hidden;
@@ -176,34 +268,61 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-family: var(--font-mono);
 }
 
 .unread-badge {
-    background: var(--online);
-    color: white;
+    background: var(--neon-green);
+    color: #000;
     font-size: 10px;
     font-weight: 800;
     min-width: 18px;
     height: 18px;
-    border-radius: 10px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 10px var(--neon-green-glow);
+    font-family: var(--font-mono);
 }
 
 /* ── Chat area ────────────────────────────────────────────────────────────── */
 .chat-area {
     flex: 1;
-    background: var(--chat-bg);
+    background: var(--bg-obsidian);
     display: flex;
     flex-direction: column;
     position: relative;
 }
 
+/* Decorative corner brackets for chat area */
+.chat-area::before,
+.chat-area::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--neon-green);
+    z-index: 1;
+}
+
+.chat-area::before {
+    top: 8px;
+    right: 8px;
+    border-left: 0;
+    border-bottom: 0;
+}
+
+.chat-area::after {
+    bottom: 8px;
+    right: 8px;
+    border-left: 0;
+    border-top: 0;
+}
+
 .chat-header {
     padding: 18px 30px;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(10, 12, 14, 0.8);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -211,9 +330,25 @@ body {
     align-items: center;
 }
 
-.active-user { display: flex; align-items: center; gap: 14px; }
-.active-name { font-weight: 700; font-size: 18px; }
-.active-status { font-size: 12px; color: var(--online); font-weight: 500; }
+.active-user { 
+    display: flex; 
+    align-items: center; 
+    gap: 14px; 
+}
+.active-name { 
+    font-weight: 700; 
+    font-size: 18px;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+.active-status { 
+    font-size: 11px; 
+    color: var(--neon-green); 
+    font-weight: 500;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
 .chat-window {
     flex: 1;
@@ -232,13 +367,24 @@ body {
 }
 .shield-icon {
     font-size: 64px;
-    color: var(--online);
+    color: var(--neon-green);
     margin-bottom: 24px;
-    opacity: 0.6;
-    filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.2));
+    opacity: 0.8;
+    filter: drop-shadow(0 0 20px var(--neon-green-glow));
 }
-.empty-chat-state h2 { font-size: 26px; margin-bottom: 12px; }
-.empty-chat-state p { color: var(--text-dim); line-height: 1.6; font-size: 14px; }
+.empty-chat-state h2 { 
+    font-size: 24px; 
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+.empty-chat-state p { 
+    color: var(--text-dim); 
+    line-height: 1.6; 
+    font-size: 14px;
+    font-family: var(--font-mono);
+}
 
 /* ── Message bubbles ──────────────────────────────────────────────────────── */
 .msg-row {
@@ -250,38 +396,41 @@ body {
 
 .bubble {
     padding: 14px 18px;
-    border-radius: 20px;
+    border-radius: 0;
     max-width: 60%;
     position: relative;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    font-size: 14.5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    font-size: 14px;
     line-height: 1.5;
+    font-family: var(--font-mono);
+    border: 1px solid #222;
 }
 .self .bubble {
-    background: var(--accent);
-    color: white;
-    border-bottom-right-radius: 4px;
+    background: #000;
+    color: var(--neon-green);
+    border-left: 3px solid var(--neon-green);
 }
 .other .bubble {
-    background: #1e293b;
-    color: #f1f5f9;
-    border-bottom-left-radius: 4px;
-    border: 1px solid var(--border);
+    background: #0a0a0a;
+    color: var(--text-primary);
+    border-left: 3px solid #333;
 }
 .bubble-meta {
-    font-size: 10px;
+    font-size: 9px;
     margin-top: 6px;
     opacity: 0.6;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 4px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
 }
 
 /* ── Chat input ───────────────────────────────────────────────────────────── */
 .input-area {
     padding: 24px 30px;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(10, 12, 14, 0.6);
     border-top: 1px solid var(--border);
 }
 .input-area.visible { display: block; animation: slideUp 0.4s ease-out; }
@@ -292,22 +441,31 @@ body {
 }
 
 .input-wrapper {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    background: #000;
+    border: 1px solid #222;
+    border-radius: 0;
     padding: 8px 12px;
     display: flex;
     align-items: center;
     gap: 12px;
+    transition: all 0.3s;
+}
+.input-wrapper:focus-within {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green-dim);
 }
 .input-wrapper input {
     flex: 1;
     background: transparent;
     border: none;
-    color: white;
-    font-size: 15px;
+    color: var(--neon-green);
+    font-size: 14px;
     outline: none;
     padding: 8px;
+    font-family: var(--font-mono);
+}
+.input-wrapper input::placeholder {
+    color: var(--text-dim);
 }
 
 .icon-btn {
@@ -316,15 +474,29 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: 0;
     cursor: pointer;
     transition: 0.2s;
     color: var(--text-dim);
+    border: 1px solid transparent;
 }
-.icon-btn:hover { background: rgba(255,255,255,0.05); color: var(--primary); }
+.icon-btn:hover { 
+    background: rgba(0, 255, 65, 0.05); 
+    color: var(--neon-green);
+    border-color: var(--neon-green);
+}
 
-.send-btn { background: var(--primary); color: #0f172a; font-size: 18px; }
-.send-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--primary-glow); }
+.send-btn { 
+    background: transparent;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green); 
+    font-size: 16px; 
+}
+.send-btn:hover { 
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-green-glow); 
+}
 
 /* FIX: single declaration — !important ensures JS .hidden class always wins */
 .hidden { display: none !important; }
@@ -332,8 +504,11 @@ body {
 /* ── Scrollbar ────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb { 
+    background: var(--neon-green-dim); 
+    border-radius: 0; 
+}
+::-webkit-scrollbar-thumb:hover { background: var(--neon-green); }
 
 /* ── Call overlay ─────────────────────────────────────────────────────────── */
 #call-overlay {
@@ -359,48 +534,52 @@ body {
 #call-avatar {
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 50%;
+    background: linear-gradient(135deg, var(--neon-green), #00cc33);
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 48px;
     font-weight: 800;
-    color: white;
+    color: #000;
     margin: 0 auto 20px;
-    box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
-    border: 4px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px var(--neon-green-glow);
+    border: 2px solid var(--neon-green);
+    font-family: var(--font-mono);
 }
 
 #call-status-text {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     margin-bottom: 8px;
-    letter-spacing: -0.5px;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
 }
 
 #caller-name {
     opacity: 0.6;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
+    font-family: var(--font-mono);
+    color: var(--neon-green);
 }
 
 /* ── Video grid ───────────────────────────────────────────────────────────── */
-/* FIX: single declaration — removed the duplicate at the bottom of the file  */
 #video-grid {
-    position: relative;          /* required for all absolute children         */
+    position: relative;
     width: 90%;
     max-width: 900px;
     aspect-ratio: 16/9;
     background: #000;
-    border-radius: 24px;
+    border-radius: 0;
     overflow: hidden;
     margin-bottom: 40px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--neon-green);
+    box-shadow: 0 0 30px var(--neon-green-dim);
 }
 
-/* FIX: position:absolute + z-index:1 so it sits as the background layer      */
 #remote-video {
     position: absolute;
     top: 0; left: 0;
@@ -411,66 +590,66 @@ body {
 }
 
 /* ── Remote avatar overlay (voice call / remote camera off) ──────────────── */
-/* FIX: z-index:2 — above remote-video(1), below local pip(10)               */
 #remote-avatar-overlay {
-    display: none;               /* shown by JS */
+    display: none;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 10px;
-    background: #0f172a;
-    border-radius: 24px;
+    background: #0a0a0a;
+    border-radius: 0;
     z-index: 2;
 }
 #remote-avatar-overlay .av-circle {
     width: 72px;
     height: 72px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 0;
+    background: var(--neon-green);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
     font-weight: 800;
-    color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #000;
+    font-family: var(--font-mono);
+    border: 2px solid var(--neon-green);
 }
 #remote-avatar-overlay .av-name {
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* ── Local video PiP ─────────────────────────────────────────────────────── */
-/* FIX: added z-index:10 (was missing) + synced position with avatar overlay  */
 #local-video {
     position: absolute;
     bottom: 16px;
     right: 16px;
     width: 160px;
     aspect-ratio: 16/9;
-    border-radius: 12px;
+    border-radius: 0;
     object-fit: cover;
-    border: 2px solid var(--primary);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    background: #1e293b;
+    border: 2px solid var(--neon-green);
+    box-shadow: 0 0 20px var(--neon-green-dim);
+    background: #000;
     z-index: 10;
 }
 
 /* ── Local avatar overlay (camera off / no camera) ───────────────────────── */
-/* FIX: exact same position & size as #local-video so swap is seamless        */
 #local-avatar-overlay {
-    display: none;               /* shown by JS */
+    display: none;
     position: absolute;
     bottom: 16px;
     right: 16px;
     width: 160px;
-    height: 90px;                /* matches aspect-ratio: 16/9 @ 160px width   */
-    border-radius: 12px;
-    background: #0f172a;
-    border: 2px solid rgba(99, 102, 241, 0.5);
+    height: 90px;
+    border-radius: 0;
+    background: #0a0a0a;
+    border: 2px solid var(--neon-green);
     align-items: center;
     justify-content: center;
     flex-direction: column;
@@ -480,47 +659,71 @@ body {
 #local-avatar-overlay .av-circle {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 0;
+    background: var(--neon-green);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     font-weight: 800;
-    color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #000;
+    font-family: var(--font-mono);
 }
 #local-avatar-overlay .av-label {
     font-size: 9px;
-    color: rgba(255,255,255,0.4);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: 0.3px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 /* ── Call control buttons ─────────────────────────────────────────────────── */
 .call-btn-circle {
     width: 72px;
     height: 72px;
-    border-radius: 50%;
-    border: none;
+    border-radius: 0;
+    border: 2px solid var(--neon-green);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
-    color: white;
+    color: var(--neon-green);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: transparent;
 }
-.call-btn-circle:hover { transform: scale(1.1); }
+.call-btn-circle:hover { 
+    transform: scale(1.1); 
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-green-glow);
+}
 
-#btn-accept-call  { background: var(--call-success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-#btn-hangup       { background: var(--call-danger);  box-shadow: 0 0 20px rgba(239, 68, 68,  0.3); }
-#btn-toggle-mic   { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
-/* FIX: was missing entirely — styled same as mic toggle button               */
-#btn-toggle-camera { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+#btn-accept-call  { 
+    background: var(--neon-green); 
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-green-glow); 
+}
+#btn-hangup       { 
+    background: transparent;
+    border-color: var(--call-danger);
+    color: var(--call-danger);  
+}
+#btn-hangup:hover {
+    background: var(--call-danger);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+}
+#btn-toggle-mic   { 
+    background: transparent; 
+    border: 2px solid var(--neon-green); 
+}
+#btn-toggle-camera { 
+    background: transparent; 
+    border: 2px solid var(--neon-green); 
+}
 
 /* ── Call log bubbles ─────────────────────────────────────────────────────── */
-/* FIX: merged the two duplicate definitions into one clean block             */
 .msg-row.call-log {
     display: flex;
     justify-content: center;
@@ -532,21 +735,23 @@ body {
     align-items: center;
     gap: 10px;
     padding: 8px 18px;
-    border-radius: 24px;
-    font-size: 12px;
+    border-radius: 0;
+    font-size: 11px;
     max-width: 340px;
     backdrop-filter: blur(10px);
+    font-family: var(--font-mono);
+    border: 1px solid;
 }
 
 .call-log-bubble.success {
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    color: var(--call-success);
+    background: rgba(0, 255, 65, 0.08);
+    border-color: var(--neon-green);
+    color: var(--neon-green);
 }
 
 .call-log-bubble.missed {
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(255, 0, 64, 0.08);
+    border-color: var(--call-danger);
     color: var(--call-danger);
 }
 
@@ -565,14 +770,16 @@ body {
 /* "Video call · 2m 11s" */
 .call-log-label {
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* "3:45 PM – 3:47 PM" */
 .call-log-meta {
-    font-size: 11px;
-    opacity: 0.7;
+    font-size: 10px;
+    opacity: 0.6;
     line-height: 1.3;
 }
 
@@ -587,10 +794,13 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 10px;
-    color: var(--online);
+    font-size: 9px;
+    color: var(--neon-green);
     opacity: 0;
     animation: encFadeIn 0.5s ease 0.2s forwards;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 .enc-indicator i {
     font-size: 9px;
@@ -601,9 +811,9 @@ body {
     to   { opacity: 0.7; transform: translateX(0); }
 }
 @keyframes lockPulse {
-    0%   { transform: scale(1);   color: var(--primary); }
-    50%  { transform: scale(1.5); color: var(--online);  }
-    100% { transform: scale(1);   color: var(--online);  }
+    0%   { transform: scale(1);   color: var(--neon-green); }
+    50%  { transform: scale(1.5); color: var(--neon-green);  }
+    100% { transform: scale(1);   color: var(--neon-green);  }
 }
 
 /* ── Screenshot warning toast ─────────────────────────────────────────────── */
@@ -612,20 +822,24 @@ body {
     top: 20px;
     left: 50%;
     transform: translateX(-50%) translateY(-80px);
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: rgba(255, 0, 64, 0.15);
+    border: 2px solid var(--call-danger);
     backdrop-filter: blur(12px);
-    color: #fca5a5;
+    color: var(--call-danger);
     padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
     z-index: 99999;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     white-space: nowrap;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
 }
 .screenshot-warning.show {
     transform: translateX(-50%) translateY(0);
@@ -720,7 +934,7 @@ body {
         display: flex !important;
         width: 38px; height: 38px;
         font-size: 20px; flex-shrink: 0;
-        color: var(--primary); align-items: center; justify-content: center;
+        color: var(--neon-green); align-items: center; justify-content: center;
     }
     #active-avatar {
         width: 36px !important; height: 36px !important;
@@ -850,19 +1064,23 @@ body {
     justify-content: center;
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 0;
     cursor: pointer;
-    color: var(--primary);
+    color: var(--neon-green);
     font-size: 18px;
     margin-right: 4px;
     transition: 0.2s;
+    border: 1px solid transparent;
 }
-.btn-back-mobile:hover { background: rgba(255,255,255,0.05); }
+.btn-back-mobile:hover { 
+    background: rgba(0, 255, 65, 0.1); 
+    border-color: var(--neon-green);
+}
 /* ── AI Summary Modal ─────────────────────────────────────────────────────── */
 .summary-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
     z-index: 50000;
     display: flex;
@@ -874,14 +1092,40 @@ body {
 .summary-modal.hidden { display: none !important; }
 
 .summary-modal-box {
-    background: #111827;
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 24px;
+    background: var(--terminal-black);
+    border: 2px solid var(--neon-green);
+    border-radius: 0;
     width: 100%;
     max-width: 560px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.05);
+    box-shadow: 0 0 40px var(--neon-green-glow);
     overflow: hidden;
     animation: slideUpModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+/* Decorative corner brackets for modal */
+.summary-modal-box::before,
+.summary-modal-box::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--neon-green);
+    z-index: 1;
+}
+
+.summary-modal-box::before {
+    top: 8px;
+    left: 8px;
+    border-right: 0;
+    border-bottom: 0;
+}
+
+.summary-modal-box::after {
+    bottom: 8px;
+    right: 8px;
+    border-left: 0;
+    border-top: 0;
 }
 
 @keyframes slideUpModal {
@@ -895,7 +1139,12 @@ body {
     align-items: center;
     padding: 20px 24px;
     border-bottom: 1px solid var(--border);
-    background: rgba(0, 212, 255, 0.03);
+    background: rgba(0, 255, 65, 0.05);
+}
+.summary-modal-header span {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    letter-spacing: 1px;
 }
 
 .summary-modal-body {
@@ -912,12 +1161,14 @@ body {
     padding: 20px 0;
     color: var(--text-dim);
     font-size: 14px;
+    font-family: var(--font-mono);
 }
 
 #summary-text {
-    color: var(--text-main);
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 13px;
     line-height: 1.8;
+    font-family: var(--font-mono);
 }
 
 #summary-text .summary-point {
@@ -929,7 +1180,7 @@ body {
 }
 #summary-text .summary-point:last-child { border-bottom: none; }
 #summary-text .summary-point i {
-    color: var(--primary);
+    color: var(--neon-green);
     margin-top: 3px;
     flex-shrink: 0;
     font-size: 12px;
@@ -939,24 +1190,22 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 212, 255, 0.08);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    color: var(--primary);
-    font-size: 11px;
-    font-weight: 600;
+    background: rgba(0, 255, 65, 0.08);
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    font-size: 10px;
+    font-weight: 700;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: 0;
     margin-bottom: 16px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
-}
-
-@media (max-width: 768px) {
-    .summary-modal-box { border-radius: 16px; }
-    .summary-modal-body { max-height: 70vh; }
 }
 
 /* ── Voice recording indicator ────────────────────────────────────────────── */
@@ -965,11 +1214,12 @@ body {
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
+    background: rgba(255, 0, 64, 0.08);
+    border: 1px solid var(--call-danger);
+    border-radius: 0;
     margin-top: 8px;
     animation: fadeIn 0.2s ease;
+    font-family: var(--font-mono);
 }
 .recording-indicator.hidden { display: none !important; }
 
@@ -977,7 +1227,7 @@ body {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #ef4444;
+    background: var(--call-danger);
     flex-shrink: 0;
     animation: recPulse 1s infinite;
 }
@@ -987,16 +1237,18 @@ body {
 }
 
 #rec-timer {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    color: #ef4444;
+    color: var(--call-danger);
     min-width: 32px;
+    font-family: var(--font-mono);
 }
 
 #btn-voice-record.recording {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
+    color: var(--call-danger);
+    background: rgba(255, 0, 64, 0.1);
     animation: recPulse 1s infinite;
+    border-color: var(--call-danger);
 }
 
 /* Voice message bubble */
@@ -1009,10 +1261,79 @@ body {
 }
 .voice-bubble i { font-size: 16px; opacity: 0.8; }
 .voice-transcript {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.5;
     flex: 1;
+    font-family: var(--font-mono);
 }
+
+/* ── Language selector ──────────────────────────────────────────────────────── */
+.lang-selector {
+    background: transparent;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.lang-selector:hover {
+    background: var(--neon-green);
+    color: #000;
+}
+.lang-selector option {
+    background: var(--terminal-black);
+    color: var(--neon-green);
+}
+
+/* ── Mobile dropdown menu ──────────────────────────────────────────────────── */
+.mob-dropdown {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: var(--terminal-black);
+    border: 1px solid var(--neon-green);
+    border-radius: 0;
+    box-shadow: 0 0 20px var(--neon-green-dim);
+    z-index: 100;
+    min-width: 200px;
+}
+
+.mob-drop-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.mob-drop-item:hover {
+    background: rgba(0, 255, 65, 0.1);
+    color: var(--neon-green);
+}
+.mob-drop-item.danger {
+    color: var(--call-danger);
+}
+.mob-drop-item.danger:hover {
+    background: rgba(255, 0, 64, 0.1);
+}
+
+.mob-drop-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+
 .voice-label {
     font-size: 10px;
     opacity: 0.5;
@@ -1067,12 +1388,12 @@ body {
     width: 18px;
     text-align: center;
     font-size: 14px;
-    color: var(--primary);
+    color: var(--neon-green);
 }
 .mob-drop-item:active,
 .mob-drop-item:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.2);
+    background: rgba(0, 255, 65, 0.1);
+    border-color: var(--neon-green);
     transform: scale(0.98);
 }
 .mob-drop-item.danger { color: #f87171; }
@@ -1098,8 +1419,8 @@ body {
     transition: 0.2s;
 }
 #chat-header-menu-btn.active {
-    color: var(--primary);
-    background: rgba(0,212,255,0.1);
+    color: var(--neon-green);
+    background: rgba(0, 255, 65, 0.1);
 }
 
 
@@ -1122,8 +1443,8 @@ body {
 
 .lang-selector:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: var(--primary);
-    border-color: rgba(0, 212, 255, 0.3);
+    color: var(--neon-green);
+    border-color: var(--neon-green);
 }
 
 .lang-selector option {
