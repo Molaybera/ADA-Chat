@@ -51,15 +51,40 @@ exports.login = async (req, res) => {
                 to: [{ email: email }],
                 subject: "🔒 Your Verification Code",
                 htmlContent: `
-                    <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 24px; padding: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                        <div style="margin-bottom: 20px; font-size: 40px;">🛡️</div>
-                        <h2 style="color: #00d4ff; margin-bottom: 10px;">Security Code</h2>
-                        <p style="color: #94a3b8; font-size: 14px;">Use the following code to access your account. It expires in 10 minutes.</p>
-                        <div style="background: rgba(255,255,255,0.05); border: 1px dashed #00d4ff; border-radius: 12px; padding: 20px; margin: 25px 0;">
-                            <span style="font-size: 42px; font-weight: 800; letter-spacing: 8px; color: #00d4ff;">${otp}</span>
-                        </div>
-                        <p style="font-size: 11px; color: #475569;">&copy; 2026 ADA Chat Secure Network</p>
-                    </div>`
+        <div style="background-color: #050505; color: #00ff41; font-family: 'Courier New', Courier, monospace; max-width: 500px; margin: 0 auto; border: 2px solid #00ff41; padding: 40px; text-align: center;">
+            <!-- Tactical Header -->
+            <div style="border-bottom: 1px solid rgba(0, 255, 65, 0.3); padding-bottom: 20px; margin-bottom: 30px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
+                <h1 style="font-size: 22px; letter-spacing: 5px; margin: 0; font-weight: bold; text-transform: uppercase;">Identity Enrollment</h1>
+                <p style="font-size: 10px; color: rgba(0, 255, 65, 0.6); margin-top: 5px;">PROTOCOL: SECURE_AUTH_V4.0</p>
+            </div>
+
+            <!-- Message Body -->
+            <p style="font-size: 13px; line-height: 1.6; color: #e0e0e0; text-align: left;">
+                > INITIALIZING SECURE CHANNEL...<br>
+                > REQUESTING ACCESS TOKEN FOR NODE: ${email}<br>
+                > AUTHORIZATION REQUIRED TO ESTABLISH LINK.
+            </p>
+
+            <!-- OTP Display Box -->
+            <div style="background: rgba(0, 255, 65, 0.05); border: 1px dashed #00ff41; padding: 30px; margin: 30px 0;">
+                <p style="font-size: 11px; margin-bottom: 15px; color: rgba(0, 255, 65, 0.7); letter-spacing: 2px;">[ UNIQUE_ACCESS_KEY ]</p>
+                <span style="font-size: 46px; font-weight: bold; letter-spacing: 12px; color: #00ff41; text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);">${otp}</span>
+            </div>
+
+            <!-- Expiration Warning -->
+            <div style="text-align: left; background: rgba(255, 49, 49, 0.1); border-left: 3px solid #ff3131; padding: 10px 15px; margin-bottom: 30px;">
+                <p style="font-size: 11px; color: #ff3131; margin: 0;">
+                    WARNING: Token validity expires in 600 seconds. Unauthorized use is prohibited.
+                </p>
+            </div>
+
+            <!-- Tactical Footer -->
+            <div style="border-top: 1px solid rgba(0, 255, 65, 0.3); padding-top: 20px; color: rgba(0, 255, 65, 0.4); font-size: 10px; letter-spacing: 1px;">
+                © 2026 ADA_SECURE_NETWORK // NODE_ID: 0x7FF41<br>
+                ENCRYPTION_LEVEL: AES-256-GCM
+            </div>
+        </div>`
             });
             console.log('✅ [BREVO] Email sent successfully to:', email);
             res.status(200).json({ message: "OTP sent to your email." });
