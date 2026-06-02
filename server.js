@@ -53,7 +53,7 @@ process.on('uncaughtException', (err) => {
     console.error('🔥 Critical Error:', err);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`🚀 Secure Messenger running at http://localhost:${PORT}`);
     console.log(`🛡️  Privacy Mode: Session-based storage active`);
